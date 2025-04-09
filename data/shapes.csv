@@ -1,0 +1,4 @@
+Type,X,Y,Width/Radius,Height,X2,Y2
+circle,100,150,50,,,
+rect,200,100,80,80,,
+line,300,200,,,400,250
