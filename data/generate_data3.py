@@ -1,142 +1,108 @@
 import numpy as np
+import random
 import csv
-import svgwrite
+import matplotlib.pyplot as plt
 
-M = 1000  # Global constant for quantization
+# Global constants
+M = 1000  # Quantization factor (you can adjust as needed)
+num_points = 100  # Number of points for circle outline
+circle_center = (500, 500)  # Circle always in the middle of the map
+circle_radius = 100  # Fixed radius of the circle
 
-def quantize(points):
-    return np.round(points).astype(int)
-
-def generate_circle_outline(cx, cy, r, num_points=100):
+# Function to generate a circle outline
+def generate_circle_outline(cx, cy, r, num_points=num_points):
     start_phase_t = np.random.uniform(0, 2 * np.pi)
     angles = np.linspace(start_phase_t, start_phase_t + 2 * np.pi, num_points)
-    return np.column_stack((cx + r * np.cos(angles), cy + r * np.sin(angles))).astype(float)
+    return np.column_stack((cx + r * np.cos(angles), cy + r * np.sin(angles)))
 
-def generate_square_outline(x, y, size, num_points=100):
-    points = []
-    for i in range(num_points):
-        fraction = i / (num_points - 1)
-        if fraction < 0.25:
-            points.append([x + fraction * size, y])
-        elif fraction < 0.5:
-            points.append([x + size, y + (fraction - 0.25) * size])
-        elif fraction < 0.75:
-            points.append([x + size - (fraction - 0.5) * size, y + size])
-        else:
-            points.append([x, y + size - (fraction - 0.75) * size])
-    return np.array(points).astype(float)
+# Function to move in a straight line and generate path to a point on the circle outline
+def move_straight_line(start, circle_point):
+    return np.array([start, circle_point])
 
-def generate_ellipse_outline(cx, cy, a, b, num_points=100):
-    start_phase_t = np.random.uniform(0, 2 * np.pi)
-    angles = np.linspace(start_phase_t, start_phase_t + 2 * np.pi, num_points)
-    return np.column_stack((cx + a * np.cos(angles), cy + b * np.sin(angles))).astype(float)
+# Function to find the closest point on the circle to the origin (start point)
+def find_closest_point_on_circle(cx, cy, r, start_point):
+    # Generate the full circle outline
+    circle_points = generate_circle_outline(cx, cy, r)
+    
+    # Calculate the distance from the start point to each point on the circle's outline
+    distances = np.linalg.norm(circle_points - start_point, axis=1)  # Euclidean distance
+    
+    # Find the index of the closest point
+    closest_point_idx = np.argmin(distances)
+    
+    # Return the closest point
+    return circle_points[closest_point_idx]
 
-def generate_triangle_outline(x, y, size, num_points=100):
-    points = []
-    for i in range(num_points):
-        fraction = i / (num_points - 1)
-        if fraction < 0.33:
-            points.append([x + fraction * size, y])
-        elif fraction < 0.66:
-            points.append([x + size - (fraction - 0.33) * size, y + (fraction - 0.33) * size * np.sqrt(3)])
-        else:
-            points.append([x + (fraction - 0.66) * size, y + size * np.sqrt(3) - (fraction - 0.66) * size * np.sqrt(3)])
-    return np.array(points).astype(float)
+# Function to plot the circle and the straight path to the closest point on the circle outline
+def plot_circles_with_paths(num_origins=5):
+    plt.figure(figsize=(6, 6))
+    
+    for _ in range(num_origins):
+        # Random origin position outside the circle's boundary
+        start_point = (random.randint(0, 1000), random.randint(0, 1000))
+        
+        # Find the closest point on the circle's outline to the origin
+        closest_point = find_closest_point_on_circle(circle_center[0], circle_center[1], circle_radius, start_point)
+        
+        # Generate the straight line path from the start to the closest point on the circle
+        path_to_circle = move_straight_line(start_point, closest_point)
+        
+        # Plot the straight line path and the circle
+        plt.plot(path_to_circle[:, 0], path_to_circle[:, 1], '--', label=f"Path from {start_point} to closest point")
+        circle_points = generate_circle_outline(circle_center[0], circle_center[1], circle_radius)
+        plt.plot(circle_points[:, 0], circle_points[:, 1], label="Circle with fixed center (500, 500) and r=100")
+    
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.title("Paths to Closest Points on Circle and Circle Drawn from Random Origins")
+    plt.xlabel("X coordinate")
+    plt.ylabel("Y coordinate")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
-def add_noise(points, noise_level=0.05):
-    noise = np.random.normal(scale=noise_level, size=points.shape)
-    return points + noise
+# Function to write paths to CSV file
+def write_paths_to_csv(num_origins=5, filename="robot_paths.csv"):
+    with open(filename, mode="w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(["x1", "y1", "a1", "x2", "y2", "a2", "x3", "y3", "a3", ...])  # Include as many columns as needed
+        
+        for _ in range(num_origins):
+            # Random origin position outside the circle's boundary
+            start_point = (random.randint(0, 1000), random.randint(0, 1000))
+            
+            # Find the closest point on the circle's outline to the origin
+            closest_point = find_closest_point_on_circle(circle_center[0], circle_center[1], circle_radius, start_point)
+            
+            # Generate the straight line path from the start to the closest point on the circle
+            path_to_circle = move_straight_line(start_point, closest_point)
+            
+            # Prepare the triplets for writing to CSV (moving towards the circle without drawing)
+            path_data = []
+            
+            # Moving towards the circle without drawing
+            for i in range(len(path_to_circle) - 1):
+                x1, y1 = path_to_circle[i]
+                x2, y2 = path_to_circle[i + 1]
+                path_data.extend([x1, y1, 0, x2, y2, 0])  # Action = 0 (not drawing)
+            
+            # Now draw the circle (drawing action = 1)
+            circle_points = generate_circle_outline(circle_center[0], circle_center[1], circle_radius)
+            
+            for i in range(len(circle_points) - 1):
+                x1, y1 = circle_points[i]
+                x2, y2 = circle_points[i + 1]
+                path_data.extend([x1, y1, 1, x2, y2, 1])  # Action = 1 (drawing)
+            
+            # Write the data to CSV
+            writer.writerow(path_data)
 
-def add_sinusoidal_disturbance(points, amplitude=5.0, frequency=1.0):
-    num_points = points.shape[0]
-    start_phase_x = np.random.uniform(0, 2 * np.pi)
-    start_phase_y = np.random.uniform(0, 2 * np.pi)
-    disturbance_x = amplitude * np.sin(frequency * np.linspace(start_phase_x, start_phase_x + 2 * np.pi, num_points))
-    disturbance_y = amplitude * np.sin(frequency * np.linspace(start_phase_y, start_phase_y + 2 * np.pi, num_points))
-    points = points.astype(float)
-    points[:, 0] += disturbance_x
-    points[:, 1] += disturbance_y
-    return points
+    print(f"Paths written to {filename}")
 
-def change_size(points, factor):
-    center = np.mean(points, axis=0)
-    return (points - center) * factor + center
-
-def calculate_time(points):
-    times = [0]
-    for i in range(1, len(points)):
-        distance = np.linalg.norm(points[i] - points[i-1])
-        times.append(times[-1] + distance)
-    return np.round(np.array(times), 3)
-
-def generate_all_shapes():
-    shapes = []
-    for f in f_s:
-        for amplitude in sine_amplitude:
-            for frequency in frequencies:
-                # Circle parameters
-                circle_params = {"cx": 500, "cy": 500, "r": 100, "num_points": int(np.round(f*20))}
-                circle_points = generate_circle_outline(**circle_params)
-                modified_circle_points = quantize(add_sinusoidal_disturbance(change_size(circle_points, f), amplitude, frequency))
-                times = calculate_time(modified_circle_points)
-                circle_triplets = []
-                for i in range(len(modified_circle_points)):
-                    circle_triplets.extend([modified_circle_points[i, 0], modified_circle_points[i, 1], times[i]])
-                shapes.append(["Circle", f, frequency, amplitude, circle_params["num_points"], circle_triplets])
-
-                # Square parameters
-                square_params = {"x": 500, "y": 500, "size": 100, "num_points": int(np.round(f*20))}
-                square_points = generate_square_outline(**square_params)
-                modified_square_points = quantize(add_sinusoidal_disturbance(change_size(square_points, f), amplitude, frequency))
-                times = calculate_time(modified_square_points)
-                square_triplets = []
-                for i in range(len(modified_square_points)):
-                    square_triplets.extend([modified_square_points[i, 0], modified_square_points[i, 1], times[i]])
-                shapes.append(["Square", f, frequency, amplitude, square_params["num_points"], square_triplets])
-
-                # Ellipse parameters
-                ellipse_params = {"cx": 500, "cy": 500, "a": 120, "b": 800, "num_points": int(np.round(f*20))}
-                ellipse_points = generate_ellipse_outline(**ellipse_params)
-                modified_ellipse_points = quantize(add_sinusoidal_disturbance(change_size(ellipse_points, f), amplitude, frequency))
-                times = calculate_time(modified_ellipse_points)
-                ellipse_triplets = []
-                for i in range(len(modified_ellipse_points)):
-                    ellipse_triplets.extend([modified_ellipse_points[i, 0], modified_ellipse_points[i, 1], times[i]])
-                shapes.append(["Ellipse", f, frequency, amplitude, ellipse_params["num_points"], ellipse_triplets])
-
-                # Triangle parameters
-                triangle_params = {"x": 500, "y": 500, "size": 200, "num_points": int(np.round(f*20))}
-                triangle_points = generate_triangle_outline(**triangle_params)
-                modified_triangle_points = quantize(add_sinusoidal_disturbance(change_size(triangle_points, f), amplitude, frequency))
-                times = calculate_time(modified_triangle_points)
-                triangle_triplets = []
-                for i in range(len(modified_triangle_points)):
-                    triangle_triplets.extend([modified_triangle_points[i, 0], modified_triangle_points[i, 1], times[i]])
-                shapes.append(["Triangle", f, frequency, amplitude, triangle_params["num_points"], triangle_triplets])
-    return shapes
-
-def save_to_csv(shapes, csv_filename="shapes_combined.csv"):
-    with open(csv_filename, "w", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["Shape", "Change_Factor", "Frequency", "Sine_Amplitude", "Num_Points", "Data"])
-        for shape in shapes:
-            writer.writerow([shape[0], shape[1], shape[2], shape[3], shape[4]] + shape[5])
-
-f_s = [0.25, 0.5, 1, 2, 4]  # Change size factors
-sine_amplitude = [0, 2, 4, 10]  # Sine disturbance amplitudes
-frequencies = [0.5, 1, 2, 4, 8, 16]  # Frequencies for sinusoidal disturbance
-
+# Main function to generate and save paths to CSV
 def main():
-    print("Generating shapes...")
-    shapes = generate_all_shapes()
-    print("Saving shapes data to CSV...")
-    save_to_csv(shapes)
-    print("✅ Shapes saved to shapes_combined.csv!")
-
-    with open("shapes_combined.csv", "r") as csvfile:
-        rows = csvfile.readlines()
-        print(f"Total rows in CSV (including header): {len(rows)}")
-        print(f"First few rows:\n{''.join(rows[:5])}")
+    print("Generating paths and saving them to CSV...")
+    write_paths_to_csv(num_origins=5, filename="circle_in_the middle.csv")
+    print("✅ Paths saved to circle_in_the_middle.csv!")
 
 if __name__ == "__main__":
     main()
