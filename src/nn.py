@@ -91,8 +91,8 @@ class TrajectoryModel(nn.Module):
         #print(f"emb_tgt: {emb_tgt.shape}")
 
         # Encode
-        print(emb_src.shape)
-        print(f"combined mask: {combined_mask.shape}")
+        #print(emb_src.shape)
+        #print(f"combined mask: {combined_mask.shape}")
         enc_output = self.encoder(emb_src, src_key_padding_mask=combined_mask)
 
         # Decode
