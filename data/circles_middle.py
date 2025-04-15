@@ -6,7 +6,7 @@ import torch
 
 # Global constants
 M = 1000  # Quantization factor (you can adjust as needed)
-num_points = 100  # Number of points for circle outline
+num_points = 20  # Number of points for circle outline
 circle_center = (500, 500)  # Circle always in the middle of the map
 circle_radius = 100  # Fixed radius of the circle
 
@@ -116,7 +116,7 @@ def write_paths_to_pt(num_origins=5, filename="robot_paths.pt"):
 # Main function to generate and save paths to CSV
 def main():
     print("Generating paths and saving them to CSV...")
-    write_paths_to_pt(num_origins=1000, filename="circle_in_the middle.pt")
+    write_paths_to_pt(num_origins=10000, filename="circle_in_the middle.pt")
     print("✅ Paths saved to circle_in_the_middle.csv!")
 
 if __name__ == "__main__":
