@@ -6,34 +6,40 @@ from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 
 from torch.nn.utils.rnn import pad_sequence
+import torch
+from torch.utils.data import Dataset, DataLoader
 
-def collate_fn(batch):
-    paths, texts = zip(*batch)
-    lengths = torch.tensor([p.size(0) for p in paths])
-    padded_paths = pad_sequence(paths, batch_first=True)
-    return padded_paths, texts, lengths
-
-
-class PathDataset(Dataset):
+class CirclePathDataset(Dataset):
     def __init__(self, file_path):
-        super().__init__()
-        self.data = torch.load(file_path)  # List of [seq_len, 4] tensors
-
+        # Load the data from the .pt file
+        self.data = torch.load(file_path)
+    
     def __len__(self):
         return len(self.data)
-
+    
     def __getitem__(self, idx):
-        return self.data[idx]
+        # Get the path tensor and the text for the given index
+        path_tensor = self.data[idx]['path']
+        text = self.data[idx]['text']
+        return path_tensor, text
 
-dataset = PathDataset("data/circle_in_the middle.pt")
 
-dataloader = DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
-"""
-for batch_paths, batch_texts, lengths in dataloader:
-    print("Paths shape:", batch_paths.shape)  # [B, T, 4]
-    print("Text conditions:", batch_texts)    # list of strings
-    print("Lengths:", lengths)                # original lengths
-"""
-it = iter(dataloader)
+from torch.nn.utils.rnn import pad_sequence
 
-print(next(it))
+def collate_fn(batch):
+    # Unzip the batch into paths and texts
+    paths, texts = zip(*batch)
+    
+    # Pad the paths (ensure they're all the same length)
+    padded_paths = pad_sequence(paths, batch_first=True, padding_value=0)  # Padding value can be set to 0
+    
+    return padded_paths, texts
+
+# Instantiate the dataset
+dataset = CirclePathDataset("/home/antonio/Workspace/Seminar/LangPathModel/data/circle_in_the middle.pt")
+
+# Create a DataLoader with the custom collate_fn
+dataloader = DataLoader(dataset, batch_size=32, collate_fn=collate_fn, shuffle=True)
+
+for i, j in dataloader:
+    print(j)
