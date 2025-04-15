@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from transformers import BertModel
 from torch.nn.utils.rnn import pad_sequence
-from LangPathModel.src.textEncoders import TextEncoder
+from LangPathModel.colab_src.textEncoders import TextEncoder
 
 
 class TrajectoryModel(nn.Module):
@@ -91,8 +91,8 @@ class TrajectoryModel(nn.Module):
         #print(f"emb_tgt: {emb_tgt.shape}")
 
         # Encode
-        print(emb_src.shape)
-        print(f"combined mask: {combined_mask.shape}")
+        #print(emb_src.shape)
+        #print(f"combined mask: {combined_mask.shape}")
         enc_output = self.encoder(emb_src, src_key_padding_mask=combined_mask)
 
         # Decode
