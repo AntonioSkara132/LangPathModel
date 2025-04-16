@@ -31,14 +31,15 @@ def move_straight_line(start, end, step_size=50):
     end = np.array(end)
     vector = end - start
     distance = np.linalg.norm(vector)
-    
+
     if distance == 0:
         return np.array([start])  # No movement
-    
+
     direction = vector / distance
-    num_steps = int(distance // step_size) + 1
+    num_steps = int(distance // step_size)
 
     points = [start + i * step_size * direction for i in range(num_steps + 1)]
+    points.append(end)  # ensure we include the exact closest point as the last point
     points = np.array(points)
     return points
 # Function to find the closest point on the circle to the origin (start point)
