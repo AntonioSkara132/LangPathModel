@@ -156,7 +156,7 @@ def visualize_paths_from_file(filename="circle_in_the middle.pt", num_paths=5):
 # Main function to generate and save paths to CSV
 def main():
     print("Generating paths and saving them to CSV...")
-    write_paths_to_pt(num_origins=1000, filename="circle_in_the middle.pt")
+    write_paths_to_pt(num_origins=10000, filename="circle_in_the middle.pt")
     print("✅ Paths saved to circle_in_the_middle.csv!")
     visualize_paths_from_file("circle_in_the middle.pt", num_paths=5)
 
