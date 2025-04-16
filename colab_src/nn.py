@@ -100,7 +100,7 @@ class TrajectoryModel(nn.Module):
 
         memory = torch.cat([enc_output, emb_text], dim=1)
         # Decode
-        out = self.decoder(emb_tgt, memory=memory, tgt_mask=tgt_mask, memory_mask = combined_mask)
+        out = self.decoder(emb_tgt, memory=memory, tgt_mask=tgt_mask, memory_key_padding_mask = combined_mask)
         out = self.output_layer(out)
         return out
     

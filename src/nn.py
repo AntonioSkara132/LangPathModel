@@ -59,7 +59,7 @@ class TrajectoryModel(nn.Module):
         #)
         self.output_layer = nn.Linear(d_model, d_traj)
 
-    def forward(self, path, emb_text, path_mask, tgt, text_mask):
+    def forward(self, path, text, path_mask, tgt, text_mask):
         batch_size, path_len = path.size(0), path.size(1)
         tgt_len = tgt.size(1)
         #print(path_len)
@@ -77,7 +77,7 @@ class TrajectoryModel(nn.Module):
         #print(emb_tgt.shape)
         emb_src = emb_src + self.positional_encoding[:path_len].permute(1, 0, 2)
         emb_tgt = emb_tgt + self.positional_encoding[:tgt_len].permute(1, 0, 2)
-        emb_text = self.text_encoder(emb_text)
+        emb_text = self.text_encoder(text, text_mask)
         #print(f"e: {emb_src.shape}")
         #print(f"tgt: {emb_tgt.shape}")
         # Combine
@@ -95,11 +95,12 @@ class TrajectoryModel(nn.Module):
         #print(emb_src.shape)
         #print(f"combined mask: {combined_mask.shape}")
         enc_output = self.encoder(emb_src, src_key_padding_mask=path_mask)
+
         combined_mask = torch.cat([path_mask, text_mask], dim=1).bool()  # [B, S]
 
         memory = torch.cat([enc_output, emb_text], dim=1)
         # Decode
-        out = self.decoder(emb_tgt, memory=memory, tgt_mask=tgt_mask, memory_mask = combined_mask)
+        out = self.decoder(emb_tgt, memory=memory, tgt_mask=tgt_mask, memory_key_padding_mask = combined_mask)
         out = self.output_layer(out)
         return out
     
