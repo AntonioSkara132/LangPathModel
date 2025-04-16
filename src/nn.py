@@ -29,6 +29,7 @@ class TrajectoryModel(nn.Module):
         
         # Positional encoding to add positional information
         self.positional_encoding = self.get_positional_encoding(max_length, d_model)
+        self.text_encoder = TextEncoder(output_dim=d_model)
 
         encoderLayer = torch.nn.TransformerEncoderLayer(
             d_model=d_model,
@@ -76,14 +77,14 @@ class TrajectoryModel(nn.Module):
         #print(emb_tgt.shape)
         emb_src = emb_src + self.positional_encoding[:path_len].permute(1, 0, 2)
         emb_tgt = emb_tgt + self.positional_encoding[:tgt_len].permute(1, 0, 2)
+        emb_text = self.text_encoder(emb_text)
         #print(f"e: {emb_src.shape}")
         #print(f"tgt: {emb_tgt.shape}")
         # Combine
-        emb_src = torch.cat([emb_src, emb_text], dim=1)
+        
         #emb_src = emb_src.transpose(0, 1)
         #emb_tgt = emb_tgt.transpose(0, 1)
         # Masks # Convert to bool padding mask
-        combined_mask = torch.cat([path_mask, text_mask], dim=1).bool()  # [B, S]
         #print(f"combined mask{combined_mask}")
 
         # Decoder target mask (causal)
@@ -93,10 +94,12 @@ class TrajectoryModel(nn.Module):
         # Encode
         #print(emb_src.shape)
         #print(f"combined mask: {combined_mask.shape}")
-        enc_output = self.encoder(emb_src, src_key_padding_mask=combined_mask)
+        enc_output = self.encoder(emb_src, src_key_padding_mask=path_mask)
+        combined_mask = torch.cat([path_mask, text_mask], dim=1).bool()  # [B, S]
 
+        memory = torch.cat([enc_output, emb_text], dim=1)
         # Decode
-        out = self.decoder(emb_tgt, memory=enc_output, tgt_mask=tgt_mask)
+        out = self.decoder(emb_tgt, memory=memory, tgt_mask=tgt_mask, memory_mask = combined_mask)
         out = self.output_layer(out)
         return out
     
