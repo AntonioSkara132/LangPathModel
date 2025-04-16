@@ -115,7 +115,7 @@ def write_paths_to_pt(num_origins=5, filename="robot_paths.pt"):
         path_data[-1][-1] = 1  # stop = 1
 
         path_tensor = torch.tensor(path_data, dtype=torch.float32)
-        path_tensor = add_noise(path_tensor)
+        path_tensor[:, 0:2] = add_noise(path_tensor)[:, 0:2]
 
         all_data.append({
             "path": path_tensor,
@@ -142,11 +142,17 @@ def visualize_paths_from_file(filename="circle_in_the middle.pt", num_paths=5):
         path = data[i]['path']
         x = path[:, 0].numpy()
         y = path[:, 1].numpy()
+        actions = path[:, 2].numpy()  # 0 = move, 1 = draw
 
-        plt.plot(x, y, label=f'Path {i+1}')
+        # Scatter plot for each action type
+        move_indices = actions > 0.5
+        draw_indices = actions < 0.5
+
+        plt.scatter(x[move_indices], y[move_indices], c='blue', marker='o', label=f'Path {i+1} - move' if i == 0 else "")
+        plt.scatter(x[draw_indices], y[draw_indices], c='orange', marker='x', label=f'Path {i+1} - draw' if i == 0 else "")
 
     plt.gca().set_aspect('equal', adjustable='box')
-    plt.title(f"Sample Paths (first {num_paths})")
+    plt.title(f"Sample Paths with Actions (first {num_paths})")
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.legend()
