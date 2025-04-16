@@ -14,7 +14,7 @@ def train(model, dataloader, niter, device):
     # model = TrajectoryModel()  
     model.train()
     text_encoder = TextEncoder(output_dim=512)
-    text_encoder.to(device) # Move text_encoder to the device
+    #text_encoder.to(device) # Move text_encoder to the device
 
     for epoch in range(niter):
         total_loss = 0
@@ -27,8 +27,9 @@ def train(model, dataloader, niter, device):
             target_output = batch_paths[:, 1:].to(device)        # all except first token, move to device
             encoder_input = batch_paths[:, 0].to(device) # Move encoder_input to the device
             encoder_input_mask = (encoder_input.abs().sum(dim=-1) != 0).int().reshape(-1, 1).to(device) # Move encoder_input_mask to the device
-            emb_text = text_encoder(batch_texts['input_ids'].to(device), batch_texts['attention_mask'].to(device)) # Pass tensors on the device
+            #emb_text = text_encoder(batch_texts['input_ids'].to(device), batch_texts['attention_mask'].to(device)) # Pass tensors on the device
             text_mask = batch_texts['attention_mask'] == 0
+            text = batch_texts['input_ids']
 
             optimizer.zero_grad()
             #print(f"encoder input mask: {encoder_input_mask.shape}")
@@ -37,7 +38,7 @@ def train(model, dataloader, niter, device):
             emb_text = emb_text.to(device).float()
             text_mask = text_mask.to(device).bool()
 
-            predictions = model(emb_text = emb_text, path = encoder_input, path_mask = encoder_input_mask, tgt = decoder_input, text_mask=text_mask)  # shape: [B, T]
+            predictions = model(text = text, path = encoder_input, path_mask = encoder_input_mask, tgt = decoder_input, text_mask=text_mask)  # shape: [B, T]
             # Reshape for loss: CrossEntropy wants [B*T, vocab_size] vs [B*T]
 
             #predictions = predictions.reshape(-1, predictions.size(-1))
