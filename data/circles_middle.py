@@ -6,7 +6,7 @@ import torch
 
 # Global constants
 M = 1000  # Quantization factor (you can adjust as needed)
-num_points = 20  # Number of points for circle outline
+num_points = 100  # Number of points for circle outline
 circle_center = (500, 500)  # Circle always in the middle of the map
 circle_radius = 100  # Fixed radius of the circle
 
@@ -15,16 +15,37 @@ def generate_circle_outline(cx, cy, r, num_points=num_points):
     start_phase_t = np.random.uniform(0, 2 * np.pi)
     angles = np.linspace(start_phase_t, start_phase_t + 2 * np.pi, num_points)
     return np.column_stack((cx + r * np.cos(angles), cy + r * np.sin(angles)))
+    
+def generate_circle_starting_at_point(cx, cy, r, start_point, num_points=num_points):
+    # Compute angle between center and start_point
+    dx, dy = start_point[0] - cx, start_point[1] - cy
+    start_angle = np.arctan2(dy, dx)
+
+    # Generate angles starting at the correct angle
+    angles = np.linspace(start_angle, start_angle + 2 * np.pi, num_points)
+    return np.column_stack((cx + r * np.cos(angles), cy + r * np.sin(angles)))
 
 # Function to move in a straight line and generate path to a point on the circle outline
-def move_straight_line(start, circle_point):
-    return np.array([start, circle_point])
+def move_straight_line(start, end, step_size=50):
+    start = np.array(start)
+    end = np.array(end)
+    vector = end - start
+    distance = np.linalg.norm(vector)
+    
+    if distance == 0:
+        return np.array([start])  # No movement
+    
+    direction = vector / distance
+    num_steps = int(distance // step_size) + 1
 
+    points = [start + i * step_size * direction for i in range(num_steps + 1)]
+    points = np.array(points)
+    return points
 # Function to find the closest point on the circle to the origin (start point)
 def find_closest_point_on_circle(cx, cy, r, start_point):
     # Generate the full circle outline
     circle_points = generate_circle_outline(cx, cy, r)
-    
+
     # Calculate the distance from the start point to each point on the circle's outline
     distances = np.linalg.norm(circle_points - start_point, axis=1)  # Euclidean distance
     
@@ -78,13 +99,11 @@ def write_paths_to_pt(num_origins=5, filename="robot_paths.pt"):
         path_to_circle = move_straight_line(start_point, closest_point)
 
         path_data = []
-        for i in range(len(path_to_circle) - 1):
-            x1, y1 = path_to_circle[i]
-            x2, y2 = path_to_circle[i + 1]
-            path_data.append([x1, y1, 0, 0])  # stop = 0
-            path_data.append([x2, y2, 0, 0])  # stop = 0
+        for x, y in path_to_circle:
+            path_data.append([x, y, 0, 0])  # a = 0, stop = 0
 
-        circle_points = generate_circle_outline(circle_center[0], circle_center[1], circle_radius)
+        circle_points = generate_circle_starting_at_point(circle_center[0], circle_center[1], circle_radius, closest_point)
+
         for i in range(len(circle_points) - 1):
             x1, y1 = circle_points[i]
             x2, y2 = circle_points[i + 1]
@@ -111,13 +130,35 @@ def write_paths_to_pt(num_origins=5, filename="robot_paths.pt"):
     # Save list of tensors to a file
     torch.save(all_data, filename)
     print(f"{len(all_data)} paths saved to {filename}")
+def visualize_paths_from_file(filename="circle_in_the middle.pt", num_paths=5):
+    import matplotlib.pyplot as plt
+    import torch
+
+    data = torch.load(filename)
+    plt.figure(figsize=(6, 6))
+
+    for i in range(min(num_paths, len(data))):
+        path = data[i]['path']
+        x = path[:, 0].numpy()
+        y = path[:, 1].numpy()
+
+        plt.plot(x, y, label=f'Path {i+1}')
+
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.title(f"Sample Paths (first {num_paths})")
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 
 # Main function to generate and save paths to CSV
 def main():
     print("Generating paths and saving them to CSV...")
-    write_paths_to_pt(num_origins=10000, filename="circle_in_the middle.pt")
+    write_paths_to_pt(num_origins=1000, filename="circle_in_the middle.pt")
     print("✅ Paths saved to circle_in_the_middle.csv!")
+    visualize_paths_from_file("circle_in_the middle.pt", num_paths=5)
 
 if __name__ == "__main__":
     main()
