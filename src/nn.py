@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from transformers import BertModel
 from torch.nn.utils.rnn import pad_sequence
-from textEncoders import TextEncoder
+from src.textEncoders import TextEncoder
 
 
 class TrajectoryModel(nn.Module):

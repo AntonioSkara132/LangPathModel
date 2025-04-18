@@ -1,6 +1,6 @@
 import torch
-from nn import TrajectoryModel
-from textEncoders import TextEncoder
+from src.nn import TrajectoryModel
+from src.textEncoders import TextEncoder
 
 #data = [Batch, sequence, (batch input, batch target)]
 
