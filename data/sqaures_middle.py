@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # Constants
 M = 1000
 num_points_per_side = 20  # total 4 sides * 20 = 80 points
-square_center = (500, 500)
+square_center = (500, 666)
 square_size = 200
 
 def generate_square_outline(x, y, size):
@@ -84,7 +84,7 @@ def write_square_paths_to_pt(num_origins=5, filename="square_paths.pt"):
 
         all_data.append({
             "path": path_tensor,
-            "text": "square"
+            "text": "square on the top side"
         })
 
     torch.save(all_data, filename)
@@ -115,8 +115,8 @@ def visualize_square_paths_from_file(filename="square_paths.pt", num_paths=5):
     plt.show()
 
 def main():
-    write_square_paths_to_pt(num_origins=10000, filename="square_paths.pt")
-    visualize_square_paths_from_file("square_paths.pt", num_paths=5)
+    write_square_paths_to_pt(num_origins=2000, filename="square_paths_top.pt")
+    visualize_square_paths_from_file("square_paths_top.pt", num_paths=5)
 
 if __name__ == "__main__":
     main()
