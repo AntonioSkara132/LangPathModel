@@ -6,7 +6,7 @@ import torch
 
 # Global constants
 M = 1000  # Quantization factor (you can adjust as needed)
-num_points = 80  # Number of points for circle outline
+num_points = 40  # Number of points for circle outline
 circle_center = (500, 500)  # Circle always in the middle of the map
 circle_radius = 200  # Fixed radius of the circle
 
