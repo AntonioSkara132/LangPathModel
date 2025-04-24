@@ -119,7 +119,7 @@ def write_paths_to_pt(num_origins=5, filename="robot_paths.pt"):
 
         all_data.append({
             "path": path_tensor,
-            "text": "draw circle"
+            "text": "circle"
         })
 
     torch.save(all_data, filename)

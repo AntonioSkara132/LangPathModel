@@ -84,7 +84,7 @@ def write_square_paths_to_pt(num_origins=5, filename="square_paths.pt"):
 
         all_data.append({
             "path": path_tensor,
-            "text": "draw square"
+            "text": "square"
         })
 
     torch.save(all_data, filename)

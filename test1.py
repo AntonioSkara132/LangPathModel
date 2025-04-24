@@ -11,10 +11,10 @@ from src.nn import TrajectoryModel
 # Step 1: Initialize the model
 
 d_model = 128
-model = TrajectoryModel(d_model=d_model, num_heads_decoder=8, num_decoder_layers=2)
+model = TrajectoryModel(d_model=d_model, num_heads_decoder=4, num_decoder_layers=2)
 
 # Step 2: Load the saved state dict
-model.load_state_dict(torch.load('/home/antonio/Workspace/Seminar/LangPathModel/models/model_state_dict_dec_2_head_8_sq_and_ci.pth', map_location='cuda' if torch.cuda.is_available() else 'cpu'))
+model.load_state_dict(torch.load('/home/antonio/Workspace/Seminar/LangPathModel/models/model_state_dict.pth', map_location='cuda' if torch.cuda.is_available() else 'cpu'))
 
 # Step 3: Move to device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -26,14 +26,15 @@ tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 text_encoder = TextEncoder(output_dim=d_model)
 
 # Text and encoding
-text = "circling"
+text = "circle"
 encoded = tokenizer(text, padding=True, truncation=True, return_tensors='pt')
 
 # **Instead of directly using text_encoder output, use encoded['input_ids'] and encoded['attention_mask']**
 # txt = text_encoder(encoded['input_ids'], encoded['attention_mask'])
 txt = encoded['input_ids'].to(device)
 txt_mask = (encoded['attention_mask'] == 0).to(device)
-
+print(txt)
+print(txt_mask)
 
 path_mask = torch.Tensor([[1]]).to(device)
 
@@ -60,7 +61,7 @@ for i in range(200):
 
     # Append next_point to tgt for next prediction
     tgt = torch.cat([tgt, next_point.unsqueeze(1)], dim=1)
-    if next_point[0, 3] > 0.12: break
+    if next_point[0, 3] > 0.2: break
     print(next_point[0, 3])
 
 # Convert predictions to numpy array
@@ -82,7 +83,8 @@ for i in range(len(positions)):
 plt.title("Generated Path with Binned Actions (0=blue, 1=red)")
 plt.xlabel("X")
 plt.ylabel("Y")
-
+plt.xlim(0, 1)
+plt.ylim(0, 1)
 plt.legend()
 plt.gca().set_aspect('equal')
 plt.grid(True)
