@@ -31,14 +31,14 @@ class TrajectoryModel(nn.Module):
         self.positional_encoding = self.get_positional_encoding(max_length, d_model)
         self.text_encoder = TextEncoder(output_dim=d_model)
 
-        encoderLayer = torch.nn.TransformerEncoderLayer(
-            d_model=d_model,
-            nhead=num_heads_encoder,
-            dim_feedforward=hidden_dim,
-            dropout=dropout,
-            batch_first = True
-        )
-        self.encoder = torch.nn.TransformerEncoder(encoder_layer=encoderLayer, num_layers=1)
+        # encoderLayer = torch.nn.TransformerEncoderLayer(
+        #     d_model=d_model,
+        #     nhead=num_heads_encoder,
+        #     dim_feedforward=hidden_dim,
+        #     dropout=dropout,
+        #     batch_first = True
+        # )
+        # self.encoder = torch.nn.TransformerEncoder(encoder_layer=encoderLayer, num_layers=1)
 
         decoderLayer = torch.nn.TransformerDecoderLayer(
             d_model=d_model,
@@ -77,7 +77,8 @@ class TrajectoryModel(nn.Module):
         #print(emb_tgt.shape)
         emb_src = emb_src + self.positional_encoding[:path_len].permute(1, 0, 2)
         emb_tgt = emb_tgt + self.positional_encoding[:tgt_len].permute(1, 0, 2)
-        emb_text = self.text_encoder(text, text_mask)
+        emb_text = self.text_encoder(text, text_mask).unsqueeze(1)
+      
         #print(f"e: {emb_src.shape}")
         #print(f"tgt: {emb_tgt.shape}")
         # Combine
@@ -94,13 +95,15 @@ class TrajectoryModel(nn.Module):
         # Encode
         #print(emb_src.shape)
         #print(f"combined mask: {combined_mask.shape}")
-        enc_output = self.encoder(emb_src, src_key_padding_mask=path_mask)
+        #enc_output = self.encoder(emb_src, src_key_padding_mask=path_mask)
         
-        combined_mask = torch.cat([path_mask, text_mask], dim=1).bool()  # [B, S]
-
-        memory = torch.cat([enc_output, emb_text], dim=1)
+        #combined_mask = torch.cat([path_mask, text_mask], dim=1).bool()  # [B, S]
+        #print(f"enc_output: {enc_output.shape}")
+        #print(f"emb_text: {emb_text.shape}")
+        #memory = torch.cat([enc_output, emb_text], dim=1)
         # Decode
-        out = self.decoder(emb_tgt, memory=memory, tgt_mask=tgt_mask, memory_key_padding_mask = combined_mask)
+        #print(f"emb_text: {emb_text.shape}")
+        out = self.decoder(emb_tgt, memory=emb_text, tgt_mask=tgt_mask)
         out = self.output_layer(out)
         return out
     
@@ -144,6 +147,7 @@ class TrajectoryModel(nn.Module):
         loss = mse_loss
         
         return loss
+
 
 # class EncoderLayer(nn.Module):
 #     def __init__(self, d_model, num_heads, dff, dropout=0.0):
