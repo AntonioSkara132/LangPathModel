@@ -6,7 +6,7 @@ class TextEncoder(nn.Module):
     def __init__(self, 
                  model_name='bert-base-uncased', 
                  output_dim=128, 
-                 use_cls_token=True,
+                 use_cls_token=False,
                  freeze=True,
                  dropout=0.1):
         super().__init__()
