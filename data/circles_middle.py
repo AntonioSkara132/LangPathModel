@@ -7,7 +7,7 @@ import torch
 # Global constants
 M = 1000  # Quantization factor (you can adjust as needed)
 num_points = 40  # Number of points for circle outline
-circle_center = (333, 500)  # Circle always in the middle of the map
+circle_center = (500, 200)  # Circle always in the middle of the map
 circle_radius = 200  # Fixed radius of the circle
 
 # Function to generate a circle outline
@@ -90,7 +90,7 @@ def plot_circles_with_paths(num_origins=5):
 
 # Function to write paths to CSV file
 def write_paths_to_pt(num_origins=5, filename="robot_paths.pt"):
-    circle_center = (333, 500)
+    circle_center = (800, 500)
     circle_radius = 100
     all_data = []
 
@@ -119,7 +119,7 @@ def write_paths_to_pt(num_origins=5, filename="robot_paths.pt"):
 
         all_data.append({
             "path": path_tensor,
-            "text": "circle"
+            "text": "circle on the right side"
         })
 
     torch.save(all_data, filename)
@@ -163,9 +163,9 @@ def visualize_paths_from_file(filename="circle_in_the middle.pt", num_paths=5):
 # Main function to generate and save paths to CSV
 def main():
     print("Generating paths and saving them to CSV...")
-    write_paths_to_pt(num_origins=2000, filename="circle_on_the_left_side.pt")
+    write_paths_to_pt(num_origins=2000, filename="circle_on_the_right.pt")
     print("✅ Paths saved to circle_in_the_middle.csv!")
-    visualize_paths_from_file("circle_on_the_left_side.pt", num_paths=5)
+    visualize_paths_from_file("circle_on_the_right.pt", num_paths=5)
 
 if __name__ == "__main__":
     main()
