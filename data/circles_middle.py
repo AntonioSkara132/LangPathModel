@@ -89,8 +89,7 @@ def plot_circles_with_paths(num_origins=5):
     #plt.show()
 
 # Function to write paths to CSV file
-def write_paths_to_pt(num_origins=5, filename="robot_paths.pt"):
-    circle_center = (500, 500)
+def write_paths_to_pt(num_origins=5, filename="robot_paths.pt", circle_center=(500, 500), text="circle in the middle"):
     circle_radius = 100
     all_data = []
 
@@ -119,18 +118,13 @@ def write_paths_to_pt(num_origins=5, filename="robot_paths.pt"):
 
         all_data.append({
             "path": path_tensor,
-            "text": "circle in the middle"
+            "text": text
         })
 
     torch.save(all_data, filename)
     print(f"{len(all_data)} annotated paths saved to {filename}")
 
 
-    torch.save(all_data, filename)
-
-    # Save list of tensors to a file
-    torch.save(all_data, filename)
-    print(f"{len(all_data)} paths saved to {filename}")
 def visualize_paths_from_file(filename="circle_in_the middle.pt", num_paths=5):
     import matplotlib.pyplot as plt
     import torch
@@ -161,11 +155,30 @@ def visualize_paths_from_file(filename="circle_in_the middle.pt", num_paths=5):
 
 
 # Main function to generate and save paths to CSV
+import argparse
+
 def main():
-    print("Generating paths and saving them to CSV...")
-    write_paths_to_pt(num_origins=2000, filename="circle_in_the_middle.pt")
-    print("✅ Paths saved to circle_in_the_middle.csv!")
-    visualize_paths_from_file("circle_in_the_middle.pt", num_paths=5)
+    parser = argparse.ArgumentParser(description="Generate paths to a circle and save to a .pt file.")
+    parser.add_argument('--circle_center', type=int, nargs=2, default=[500, 500],
+                        help='Center of the circle as two integers, e.g., --circle_center 500 500')
+    parser.add_argument('--text', type=str, default='circle in the middle',
+                        help='Text annotation for each path')
+    parser.add_argument('--filename', type=str, default='circle_in_the_middle.pt',
+                        help='Output filename for the saved tensor')
+    parser.add_argument('--num_origins', type=int, default=2000,
+                        help='Number of paths generated')
+
+    args = parser.parse_args()
+
+    circle_center = tuple(args.circle_center)
+    filename = args.filename
+    text = args.text
+    num_origins = args.num_origins
+
+    print(f"Generating paths with center at {circle_center} and saving to '{filename}'...")
+    write_paths_to_pt(num_origins=num_origins, filename=filename, circle_center=circle_center, text=text)
+    print(f"✅ Paths saved to {filename}")
+    visualize_paths_from_file(filename, num_paths=5)
 
 if __name__ == "__main__":
     main()

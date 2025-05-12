@@ -57,7 +57,7 @@ def add_noise(points, noise_level=0.05):
     noise = np.random.normal(scale=noise_level, size=points.shape)
     return points + noise
 
-def write_square_paths_to_pt(num_origins=5, filename="square_paths.pt"):
+def write_square_paths_to_pt(num_origins=5, filename="square_paths.pt", square_center=(500, 200), text="square on the bottom side"):
     all_data = []
 
     for _ in range(num_origins):
@@ -84,11 +84,12 @@ def write_square_paths_to_pt(num_origins=5, filename="square_paths.pt"):
 
         all_data.append({
             "path": path_tensor,
-            "text": "square on the bottom side"
+            "text": text
         })
 
     torch.save(all_data, filename)
     print(f"{len(all_data)} square paths saved to {filename}")
+
 
 def visualize_square_paths_from_file(filename="square_paths.pt", num_paths=5):
     data = torch.load(filename)
@@ -114,9 +115,30 @@ def visualize_square_paths_from_file(filename="square_paths.pt", num_paths=5):
     plt.grid(True)
     plt.show()
 
+import argparse
+
 def main():
-    write_square_paths_to_pt(num_origins=2000, filename="square_paths_bottom.pt")
-    visualize_square_paths_from_file("square_paths_bottom.pt", num_paths=5)
+    parser = argparse.ArgumentParser(description="Generate paths to a square and save to a .pt file.")
+    parser.add_argument('--square_center', type=int, nargs=2, default=[500, 200],
+                        help='Center of the square as two integers, e.g., --square_center 500 200')
+    parser.add_argument('--text', type=str, default='square on the bottom side',
+                        help='Text annotation for each path')
+    parser.add_argument('--filename', type=str, default='square_paths_bottom.pt',
+                        help='Output filename for the saved tensor')
+    parser.add_argument('--num_origins', type=int, default=2000,
+                        help='Number of paths generated')
+                        
+    args = parser.parse_args()
+
+    square_center = tuple(args.square_center)
+    filename = args.filename
+    text = args.text
+    num_origins = args.num_origins
+
+    print(f"Generating square paths with center at {square_center} and saving to '{filename}'...")
+    write_square_paths_to_pt(num_origins=num_origins, filename=filename, square_center=square_center, text=text)
+    visualize_square_paths_from_file(filename, num_paths=5)
+
 
 if __name__ == "__main__":
     main()
