@@ -55,7 +55,7 @@ class TrajectoryModel(nn.Module):
             batch_first = True
         )
         self.decoder = torch.nn.TransformerDecoder(decoder_layer=decoderLayer, num_layers=5)
-        # Define M encoder layers
+        # Define M encoder layersA
         #self.encoder_layers = nn.ModuleList(
         #    [EncoderLayer(d_model=d_model, num_heads=num_heads_encoder, dff=hidden_dim, dropout=dropout) for _ in range(num_encoder_layers)]
         #)
@@ -111,6 +111,7 @@ class TrajectoryModel(nn.Module):
         # Decode
         #print(f"emb_text: {emb_text.shape}")
         out = self.decoder(emb_tgt, memory=emb_text, tgt_mask=tgt_mask)
+        
         pi, mu, sigma, logits = self.output_layer(out)
         return out
     
@@ -121,99 +122,6 @@ class TrajectoryModel(nn.Module):
         pe[:, 0, 0::2] = torch.sin(position * div_term)
         pe[:, 0, 1::2] = torch.cos(position * div_term)
         return pe
-    
-    def get_loss(self, predictions, targets, loss_type='mse'):
-        """
-        Compute the loss for the model, including MSE loss and a length penalty.
-
-        Args:
-        - predictions: Tensor of predicted outputs, shape [batch_size, seq_length, d_traj]
-        - targets: Tensor of ground truth values, shape [batch_size, seq_length, d_traj]
-        - predicted_length: Tensor of the predicted sequence length, shape [batch_size]
-        - target_length: Target length for the sequence, scalar or tensor of shape [batch_size]
-        - lambda_penalty: Hyperparameter to control the weight of the length penalty
-        - loss_type: Type of loss to use. Options are 'mse' (Mean Squared Error)
-
-        Returns:
-        - loss: Scalar tensor representing the computed loss value
-        """
-        
-        # Mean Squared Error Loss
-        if loss_type == 'mse':
-            criterion = nn.MSELoss()
-            mse_loss = criterion(predictions, targets)
-        
-        else:
-            raise ValueError(f"Unsupported loss type: {loss_type}")
-        
-        # Penalizing based on the difference between predicted length and target length
-        #length_penalty = torch.abs(length).float()
-        #length_penalty = length_penalty.mean()  # average penalty across the batch
-        
-        # Total loss: MSE loss + lambda * length penalty
-        loss = mse_loss
-        
-        return loss
-
-# class EncoderLayer(nn.Module):
-#     def __init__(self, d_model, num_heads, dff, dropout=0.0):
-#         super(EncoderLayer, self).__init__()
-#         self.layer = nn.TransformerEncoderLayer(
-#             d_model=d_model,
-#             nhead=num_heads,
-#             dim_feedforward=dff,
-#             dropout=dropout
-#         )
-
-#     def forward(self, x):
-#         return self.layer(x)
-
-# class DecoderLayer(nn.Module):
-#     def __init__(self, d_model, num_heads, dff, dropout=0.0):
-#         super(DecoderLayer, self).__init__()
-#         self.layer = nn.TransformerDecoderLayer(
-#             d_model=d_model,
-#             nhead=num_heads,
-#             dim_feedforward=dff,
-#             dropout=dropout
-#         )
-
-#     def forward(self, x, memory, tgt_mask=None):
-#         return self.layer(x, memory, tgt_mask=tgt_mask)
-
-#     def forward(self, x, enc_output, mask=None):
-#         # Apply the transformer decoder layer
-#         return self.decoder_layer(x, enc_output, memory_key_padding_mask=mask[1], tgt_key_padding_mask=mask[0])
-
-"""
-import torch
-import torch.nn as nn
-from transformers import BertModel, BertTokenizer
-
-class TextEncoder(nn.Module):
-    def __init__(self, pretrained_model_name='bert-base-uncased', d_model=128):
-        super(TextEncoder, self).__init__()
-        self.bert = BertModel.from_pretrained(pretrained_model_name)
-        self.dropout = nn.Dropout(0.1)
-        
-        # Project BERT's hidden size to desired model size
-        hidden_size = self.bert.config.hidden_size
-        self.linear = nn.Linear(hidden_size, d_model)
-
-        # Optionally freeze BERT
-        for param in self.bert.parameters():
-            param.requires_grad = False
-
-    def forward(self, text_input, attention_mask=None):
-        
-        :param text_input: Tensor of shape (batch_size, seq_length)
-        :param attention_mask: Optional mask tensor of shape (batch_size, seq_length)
-        :return: Tensor of shape (batch_size, seq_length, d_model)
-        
-        outputs = self.bert(input_ids=text_input, attention_mask=attention_mask)
-        hidden_states = outputs.last_hidden_state  # shape: (batch, seq_len, hidden_size)
-        projected = self.linear(hidden_states)     # shape: (batch, seq_len, d_model)
-        return self.dropout(projected)
 
 def classification_loss(logits, target_as):
     logits = logits.view(-1, 2)
@@ -221,7 +129,6 @@ def classification_loss(logits, target_as):
     loss_a = nn.functional.binary_cross_entropy_with_logits(logits[:, 0], target_as[:, 0].float())
     loss_s = nn.functional.binary_cross_entropy_with_logits(logits[:, 1], target_as[:, 1].float())
     return loss_a + loss_s
-"""
     
 class MDNHead(nn.Module):
     def __init__(self, hidden_dim, num_components):
