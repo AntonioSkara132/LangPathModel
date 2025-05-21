@@ -1,125 +1,156 @@
 import numpy as np
 import random
-import csv
+import torch
 import matplotlib.pyplot as plt
 
-# Global constants
-M = 1000  # Quantization factor (you can adjust as needed)
-num_points = 100  # Number of points for square outline
-square_center = (500, 500)  # Square always in the middle of the map
-square_size = 200  # Fixed size of the square
+"""
+Script that creates a path starting with some random origin point end ending with the square at some position
 
-# Function to generate a square outline
-def generate_square_outline(x, y, size, num_points=num_points):
-    # Generate the points for a square's outline
-    points = []
-    for i in range(num_points):
-        fraction = i / (num_points - 1)
-        if fraction < 0.25:
-            points.append([x + fraction * size, y])
-        elif fraction < 0.5:
-            points.append([x + size, y + (fraction - 0.25) * size])
-        elif fraction < 0.75:
-            points.append([x + size - (fraction - 0.5) * size, y + size])
-        else:
-            points.append([x, y + size - (fraction - 0.75) * size])
+Arguments: 
+	square center(list):	(x, y) position of the square
+	text(str)		text annotation for path
+	filename:		name of the file paths will be saved
+	num origins:		number of paths to be generated
+"""
+
+
+# Constants
+M = 1000
+num_points_per_side = 20  # total 4 sides * 20 = 80 points
+square_center = (500, 200)
+square_size = 200
+
+def generate_square_outline(x, y, size):
+    half = size / 2
+    # Define 4 corners
+    top_left = (x - half, y - half)
+    top_right = (x + half, y - half)
+    bottom_right = (x + half, y + half)
+    bottom_left = (x - half, y + half)
+    
+    # Interpolate points along each edge
+    top = np.linspace(top_left, top_right, num_points_per_side)
+    right = np.linspace(top_right, bottom_right, num_points_per_side)
+    bottom = np.linspace(bottom_right, bottom_left, num_points_per_side)
+    left = np.linspace(bottom_left, top_left, num_points_per_side)
+    
+    return np.vstack([top, right, bottom, left])
+
+def move_straight_line(start, end, step_size=50):
+    start = np.array(start)
+    end = np.array(end)
+    vector = end - start
+    distance = np.linalg.norm(vector)
+
+    if distance == 0:
+        return np.array([start])
+
+    direction = vector / distance
+    num_steps = int(distance // step_size)
+
+    points = [start + i * step_size * direction for i in range(num_steps + 1)]
+    points.append(end)
     return np.array(points)
 
-# Function to move in a straight line and generate the path to a point on the square outline
-def move_straight_line(start, square_point):
-    return np.array([start, square_point])
+def find_closest_point_on_square(square_points, start_point):
+    distances = np.linalg.norm(square_points - start_point, axis=1)
+    idx = np.argmin(distances)
+    return square_points[idx]
 
-# Function to find the closest point on the square to the origin (start point)
-def find_closest_point_on_square(x, y, size, start_point):
-    # Generate the full square outline
-    square_points = generate_square_outline(x, y, size)
-    
-    # Calculate the distance from the start point to each point on the square's outline
-    distances = np.linalg.norm(square_points - start_point, axis=1)  # Euclidean distance
-    
-    # Find the index of the closest point
-    closest_point_idx = np.argmin(distances)
-    
-    # Return the closest point
-    return square_points[closest_point_idx]
+def generate_square_starting_at_point(square_points, start_point):
+    distances = np.linalg.norm(square_points - start_point, axis=1)
+    start_idx = np.argmin(distances)
+    # Roll array so it starts at closest point
+    rolled = np.roll(square_points, -start_idx, axis=0)
+    return rolled
 
-# Function to add noise to the path
 def add_noise(points, noise_level=0.05):
     noise = np.random.normal(scale=noise_level, size=points.shape)
     return points + noise
 
-# Function to plot squares and paths
-def plot_squares_with_paths(num_origins=5):
-    plt.figure(figsize=(6, 6))
-    
+def write_square_paths_to_pt(num_origins=5, filename="square_paths.pt", square_center=(500, 200), text="square on the bottom side"):
+    all_data = []
+
     for _ in range(num_origins):
-        # Random origin position outside the square's boundary
         start_point = (random.randint(0, 1000), random.randint(0, 1000))
-        
-        # Find the closest point on the square's outline to the origin
-        closest_point = find_closest_point_on_square(square_center[0], square_center[1], square_size, start_point)
-        
-        # Generate the straight line path from the start to the closest point on the square
-        path_to_square = move_straight_line(start_point, closest_point)
-        
-        # Plot the straight line path and the square
-        plt.plot(path_to_square[:, 0], path_to_square[:, 1], '--', label=f"Path from {start_point} to closest point")
         square_points = generate_square_outline(square_center[0], square_center[1], square_size)
-        plt.plot(square_points[:, 0], square_points[:, 1], label="Square with fixed center (500, 500) and size=200")
-    
-    #plt.gca().set_aspect('equal', adjustable='box')
-    #plt.title("Paths to Closest Points on Square and Square Drawn from Random Origins")
-    #plt.xlabel("X coordinate")
-    #plt.ylabel("Y coordinate")
-    #plt.legend()
-    #plt.grid(True)
-    #plt.show()
+        closest_point = find_closest_point_on_square(square_points, start_point)
+        path_to_square = move_straight_line(start_point, closest_point)
 
-# Function to write paths to CSV file
-def write_paths_to_csv(num_origins=5, filename="robot_square_paths.csv"):
-    with open(filename, mode="w", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(["x1", "y1", "a1", "x2", "y2", "a2", "x3", "y3", "a3", ...])  # Include as many columns as needed
-        
-        for _ in range(num_origins):
-            # Random origin position outside the square's boundary
-            start_point = (random.randint(0, 1000), random.randint(0, 1000))
-            
-            # Find the closest point on the square's outline to the origin
-            closest_point = find_closest_point_on_square(square_center[0], square_center[1], square_size, start_point)
-            
-            # Generate the straight line path from the start to the closest point on the square
-            path_to_square = move_straight_line(start_point, closest_point)
-            
-            # Prepare the triplets for writing to CSV (moving towards the square without drawing)
-            path_data = []
-            
-            # Moving towards the square without drawing
-            for i in range(len(path_to_square) - 1):
-                x1, y1 = path_to_square[i]
-                x2, y2 = path_to_square[i + 1]
-                path_data.extend([x1, y1, 0, x2, y2, 0])  # Action = 0 (not drawing)
-            
-            # Now draw the square (drawing action = 1)
-            square_points = generate_square_outline(square_center[0], square_center[1], square_size)
-            
-            for i in range(len(square_points) - 1):
-                x1, y1 = square_points[i]
-                x2, y2 = square_points[i + 1]
-                path_data.extend([x1, y1, 1, x2, y2, 1])  # Action = 1 (drawing)
-            
-            # Add noise to the path data
-            path_data = add_noise(np.array(path_data).reshape(-1, 6))  # Reshape for correct dimension
-            # Write the data to CSV
-            writer.writerow(path_data.flatten())
+        path_data = []
+        for x, y in path_to_square:
+            path_data.append([x, y, 0, 0])  # move
 
-    print(f"Paths written to {filename}")
+        ordered_square_points = generate_square_starting_at_point(square_points, closest_point)
+        for i in range(len(ordered_square_points) - 1):
+            x1, y1 = ordered_square_points[i]
+            x2, y2 = ordered_square_points[i + 1]
+            path_data.append([x1, y1, 1, 0])
+            path_data.append([x2, y2, 1, 0])
 
-# Main function to generate and save paths to CSV
+        path_data[-1][-1] = 1  # stop = 1
+
+        path_tensor = torch.tensor(path_data, dtype=torch.float32)
+        path_tensor[:, 0:2] = add_noise(path_tensor[:, 0:2])
+
+        all_data.append({
+            "path": path_tensor,
+            "text": text
+        })
+
+    torch.save(all_data, filename)
+    print(f"{len(all_data)} square paths saved to {filename}")
+
+
+def visualize_square_paths_from_file(filename="square_paths.pt", num_paths=5):
+    data = torch.load(filename)
+    plt.figure(figsize=(6, 6))
+
+    for i in range(min(num_paths, len(data))):
+        path = data[i]['path']
+        x = path[:, 0].numpy()
+        y = path[:, 1].numpy()
+        actions = path[:, 2].numpy()
+
+        draw = actions > 0.5
+        move = actions <= 0.5
+
+        plt.scatter(x[move], y[move], c='blue', marker='o', label='move' if i == 0 else "")
+        plt.scatter(x[draw], y[draw], c='red', marker='x', label='draw' if i == 0 else "")
+
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.title("Generated Square Paths with Actions")
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+import argparse
+
 def main():
-    print("Generating paths and saving them to CSV...")
-    write_paths_to_csv(num_origins=1000, filename="square_in_the_middle.csv")
-    print("✅ Paths saved to square_in_the_middle.csv!")
+    parser = argparse.ArgumentParser(description="Generate paths to a square and save to a .pt file.")
+    parser.add_argument('--square_center', type=int, nargs=2, default=[500, 200],
+                        help='Center of the square as two integers, e.g., --square_center 500 200')
+    parser.add_argument('--text', type=str, default='square on the bottom side',
+                        help='Text annotation for each path')
+    parser.add_argument('--filename', type=str, default='square_paths_bottom.pt',
+                        help='Output filename for the saved tensor')
+    parser.add_argument('--num_origins', type=int, default=2000,
+                        help='Number of paths generated')
+                        
+    args = parser.parse_args()
+
+    square_center = tuple(args.square_center)
+    filename = args.filename
+    text = args.text
+    num_origins = args.num_origins
+
+    print(f"Generating square paths with center at {square_center} and saving to '{filename}'...")
+    write_square_paths_to_pt(num_origins=num_origins, filename=filename, square_center=square_center, text=text)
+    visualize_square_paths_from_file(filename, num_paths=5)
+
 
 if __name__ == "__main__":
     main()
+

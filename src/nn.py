@@ -2,13 +2,6 @@ import torch
 import torch.nn as nn
 from transformers import BertModel
 from torch.nn.utils.rnn import pad_sequence
-from src.textEncoders import TextEncoder
-
-
-import torch
-import torch.nn as nn
-from transformers import BertModel
-from torch.nn.utils.rnn import pad_sequence
 from LangPathModel.colab_src.textEncoders import TextEncoder
 
 
@@ -84,7 +77,7 @@ class TrajectoryModel(nn.Module):
         #print(emb_tgt.shape)
         emb_src = emb_src + self.positional_encoding[:path_len].permute(1, 0, 2)
         emb_tgt = emb_tgt + self.positional_encoding[:tgt_len].permute(1, 0, 2)
-        emb_text = self.text_encoder(text, text_mask).unsqueeze(1)
+        emb_text = self.text_encoder(text, text_mask)
       
         #print(f"e: {emb_src.shape}")
         #print(f"tgt: {emb_tgt.shape}")
@@ -154,6 +147,7 @@ class TrajectoryModel(nn.Module):
         loss = mse_loss
         
         return loss
+
 
 # class EncoderLayer(nn.Module):
 #     def __init__(self, d_model, num_heads, dff, dropout=0.0):
