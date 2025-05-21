@@ -1,90 +1,114 @@
+import argparse
 import torch
 import matplotlib.pyplot as plt
-import numpy as np
-
 from matplotlib.animation import FuncAnimation
-from textEncoders import TextEncoder
 from transformers import AutoTokenizer
-from nn import TrajectoryModel
 
-d_model = 128
-model = TrajectoryModel(d_model=d_model, num_heads_decoder=8, num_decoder_layers=2)
-model.eval()
+# ---- Your own modules ---- #
+from textEncoders import TextEncoder  # update if module path differs
+from nn import TrajectoryModel        # update if module path differs
 
-# Load the trained model
-model.load_state_dict(torch.load('/home/antonio/Workspace/Seminar/LangPathModel/colab_src/model_state_dict.pth', map_location='cuda' if torch.cuda.is_available() else 'cpu'))
 
-# Move model to the device
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = model.to(device)
-model.positional_encoding = model.positional_encoding.to(device)
+def build_model(d_model: int, num_heads: int, num_decoder_layers: int, model_path: str, device: torch.device):
+    """Instantiate TrajectoryModel and load weights."""
+    model = TrajectoryModel(
+        d_model=d_model,
+        num_heads_decoder=num_heads,
+        num_decoder_layers=num_decoder_layers,
+    )
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
+    model.eval()
+    model.positional_encoding = model.positional_encoding.to(device)  # ensure PE on the same device
+    return model
 
-# Initialize tokenizer and encoder
-tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-text_encoder = TextEncoder(output_dim=d_model)
 
-# Encode text
-text = "bottom circle"
-encoded = tokenizer(text, padding=True, truncation=True, return_tensors='pt')
+def generate_animation(model: TrajectoryModel, tokenizer, text_prompt: str, frames: int, interval: int, device: torch.device, save_path: str | None):
+    """Generate and optionally save an animated trajectory."""
+    # Encode text
+    encoded = tokenizer(text_prompt, padding=True, truncation=True, return_tensors="pt")
+    txt = encoded["input_ids"].to(device)
+    txt_mask = (encoded["attention_mask"] == 0).to(device)
+    path_mask = torch.tensor([[1]], device=device)
 
-txt = encoded['input_ids'].to(device)
-txt_mask = (encoded['attention_mask'] == 0).to(device)
+    # Initialise starting point
+    start = torch.tensor([[[0.1, 0.9, 0.0, 0.0]]], device=device)  # shape (1,1,4)
+    tgt = start.clone()
+    positions = [start[0, 0, :2].clone().cpu().numpy()]
 
-path_mask = torch.Tensor([[1]]).to(device)
+    # Matplotlib setup
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.set_xlim(-0.1, 1.1)
+    ax.set_ylim(-0.1, 1.1)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_title("Generated Path with Binned Actions (0=blue, 1=red)")
+    ax.grid(True)
+    ax.set_aspect("equal")
 
-# Initialize starting point
-start = torch.Tensor([[[0.1, 0.9, 0, 0]]]).to(device)
-tgt = start
-positions = [start[0, 0, :2].clone().cpu().numpy()]  # Store initial position
+    scatter_action_0 = ax.scatter([], [], color="blue", label="Action = 0", s=50)
+    scatter_action_1 = ax.scatter([], [], color="red", label="Action = 1", s=50)
+    ax.legend()
 
-# Set up the plot
-fig, ax = plt.subplots(figsize=(8, 6))
-ax.set_xlim(-0.1, 1.1)
-ax.set_ylim(-0.1, 1.1)
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_title('Generated Path with Binned Actions (0=blue, 1=red)')
-
-# Scatter plot objects
-scatter_action_0 = ax.scatter([], [], color='blue', label='Action = 0', s=50)
-scatter_action_1 = ax.scatter([], [], color='red', label='Action = 1', s=50)
-ax.legend()
-ax.grid(True)
-ax.set_aspect('equal')
-
-# Function to update the plot with new points
-def update(i):
-    global start, tgt
-
-    with torch.no_grad():
-        # Generate the next prediction
-        prediction = model(text=txt, path=start, tgt=tgt, text_mask=txt_mask, path_mask=path_mask)
-
-    next_point = prediction[:, -1, :]
-    positions.append(next_point[0, :2].cpu().numpy())  # Save (x, y)
-
-    # Append next_point to tgt for next prediction
-    tgt = torch.cat([tgt, next_point.unsqueeze(1)], dim=1)
-
-    # Binned actions
-    actions = tgt[0, :, 2].cpu().numpy()
-    binned_actions = (actions >= 0.5).astype(int)
-
-    # Update the scatter plots with the new position and action
-    if binned_actions[-1] == 0:
-        scatter_action_0.set_offsets(positions)  # Add new point to action 0 scatter
-    else:
-        scatter_action_1.set_offsets(positions)  # Add new point to action 1 scatter
-
-    if next_point[0, 3] > 0.5:
+    def update(_):
+        nonlocal tgt, positions
+        with torch.no_grad():
+            prediction = model(text=txt, path=start, tgt=tgt, text_mask=txt_mask, path_mask=path_mask)
+        next_point = prediction[:, -1, :]
+        positions.append(next_point[0, :2].cpu().numpy())
+        tgt = torch.cat([tgt, next_point.unsqueeze(1)], dim=1)
+        actions = tgt[0, :, 2].cpu().numpy()
+        binned_actions = (actions >= 0.5).astype(int)
+        if binned_actions[-1] == 0:
+            scatter_action_0.set_offsets(positions)
+        else:
+            scatter_action_1.set_offsets(positions)
         return scatter_action_0, scatter_action_1
 
-    return scatter_action_0, scatter_action_1
+    ani = FuncAnimation(fig, update, frames=frames, interval=interval, repeat=False)
 
-# Create the animation and assign it to a variable
-from IPython.display import HTML
+    if save_path:
+        ani.save(save_path)
+        print(f"Animation saved to {save_path}")
+    else:
+        plt.show()
 
-ani = FuncAnimation(fig, update, frames=200, interval=100, repeat=False)
 
-# Display as HTML5 video
-plt.show()
+# ------------------------------ CLI ------------------------------ #
+
+def get_args():
+    parser = argparse.ArgumentParser(description="Generate and visualise a trajectory from text using TrajectoryModel")
+    parser.add_argument("--model_path", type=str, required=True, help="Path to the trained model state dict (.pth)")
+    parser.add_argument("--text", type=str, default="bottom circle", help="Text prompt describing the desired trajectory")
+    parser.add_argument("--d_model", type=int, default=128, help="Transformer model dimension")
+    parser.add_argument("--num_heads", type=int, default=8, help="Number of attention heads in the decoder")
+    parser.add_argument("--num_decoder_layers", type=int, default=2, help="Number of decoder layers")
+    parser.add_argument("--frames", type=int, default=200, help="Number of animation frames")
+    parser.add_argument("--interval", type=int, default=100, help="Delay between frames in milliseconds")
+    parser.add_argument("--save", type=str, default=None, help="Optional output file (e.g., path/animation.mp4 or .gif). If omitted, animation is displayed interactively.")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = get_args()
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+
+    model = build_model(
+        d_model=args.d_model,
+        num_heads=args.num_heads,
+        num_decoder_layers=args.num_decoder_layers,
+        model_path=args.model_path,
+        device=device,
+    )
+
+    generate_animation(
+        model=model,
+        tokenizer=tokenizer,
+        text_prompt=args.text,
+        frames=args.frames,
+        interval=args.interval,
+        device=device,
+        save_path=args.save,
+    )
