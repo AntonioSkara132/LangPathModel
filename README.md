@@ -15,7 +15,7 @@ pip install -r requirements.txt
 To train the LangPathModel, run the following command:
 
 ```bash
-python train_trajectory_model.py \
+python training	.py \
   --niter 50 \
   --start_lr 0.001 \
   --lr_step 15 \
