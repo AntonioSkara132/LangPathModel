@@ -37,15 +37,15 @@ Replace `/path/to/...` with the appropriate file paths on your system.
 To generate and visualize a path from a text prompt using a trained model:
 
 ```bash
-python generate_path_animation.py \
-  --model_path colab_src/model_state_dict.pth \
+python evaluate_model.py \
+  --model_path path/to/model.pth \
   --text "bottom circle" \
   --d_model 128 \
   --num_heads 8 \
   --num_decoder_layers 2 \
   --frames 200 \
   --interval 100 \
-  --save /home/antonio/Workspace/trajectory.mp4
+  --save path/to/video.mp4
 ```
 
 Omit `--save` to display the animation interactively instead of saving it.
@@ -59,7 +59,6 @@ python data/squares.py --square_center 250 500 --text "left square" --filename "
 
 python data/circles.py --circle_center 250 500 --text "left circle" --filename "left_circle.pt" --num_origins 5000
 ```
-
 These scripts create `.pt` files containing training data of paths shaped as squares or circles, labeled with the given text prompts.
 
 ## Contributing
