@@ -1,8 +1,8 @@
 import argparse
 import torch
 from torch.utils.data import DataLoader
-from LangPathModel.colab_src.nn import TrajectoryModel
-from LangPathModel.data.data_utils import ShapPathDataset, collate_fn
+from colab_src.nn import TrajectoryModel
+from data.data_utils import ShapPathDataset, collate_fn
 
 t
 def get_args():
