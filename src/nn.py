@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 from transformers import BertModel
 from torch.nn.utils.rnn import pad_sequence
-from LangPathModel.colab_src.textEncoders import TextEncoder
+from src.textEncoders import TextEncoder
 
 
-class TrajectoryModel(nn.Module):
+class LangPathModel(nn.Module):
 	def __init__(self, 
 		 d_traj = 4, 
 		 d_model=512, 
@@ -54,7 +54,7 @@ class TrajectoryModel(nn.Module):
 		out = self.output_layer(out)
 		return out
 
-		def get_positional_encoding(self, max_length, d_model):
+	def get_positional_encoding(self, max_length, d_model):
 		position = torch.arange(0, max_length).unsqueeze(1).float()
 		div_term = torch.exp(torch.arange(0, d_model, 2).float() * -(torch.log(torch.tensor(10000.0)) / d_model))
 		pe = torch.zeros(max_length, 1, d_model)
@@ -71,7 +71,7 @@ class TrajectoryModel(nn.Module):
 		lambda_penalty: float = 0.1,
 		loss_type: str = "mse",
 	):
-	"""Just and MSE loss between target output and predictions, bu we need to keep in mind to mask extra elements"""
+		"""Just and MSE loss between target output and predictions, bu we need to keep in mind to mask extra elements"""
 
 
 		mask_exp = mask.unsqueeze(-1).float()
@@ -93,7 +93,7 @@ class TrajectoryModel(nn.Module):
 			loss_penalty = length_penalty.float().mean()
 			loss = loss_core + lambda_penalty * loss_penalty
 		else:
-		loss = loss_core
+			loss = loss_core
 
 		return loss
 

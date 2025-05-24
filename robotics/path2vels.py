@@ -1,11 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from src.nn import LangPathModel
 
 def calc_point_vels(path: np.ndarray, target_velocity=1.0, ramp_up_time=100.0, ramp_down_time=140.0):
-""" 
-function that takes paths and calculates velocities according to the wanted trapesoid side profile
-returns: ndarray od size [Sequence length, 2], [velocity_x, velocity_y] 
-"""
+	""" 
+	function that takes paths and calculates velocities according to the wanted trapesoid side profile
+	returns: ndarray od size [Sequence length, 2], [velocity_x, velocity_y] 
+	"""
 	if len(path) < 2:
 		raise ValueError("Path must have at least two points")
 

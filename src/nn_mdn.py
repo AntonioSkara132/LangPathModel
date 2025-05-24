@@ -5,14 +5,7 @@ from torch.nn.utils.rnn import pad_sequence
 from src.textEncoders import TextEncoder
 
 
-import torch
-import torch.nn as nn
-from transformers import BertModel
-from torch.nn.utils.rnn import pad_sequence
-from LangPathModel.colab_src.textEncoders import TextEncoder
-
-
-class TrajectoryModel(nn.Module):
+class LangPathModel(nn.Module):
     def __init__(self, 
                  d_traj = 4, 
                  d_model=512, 

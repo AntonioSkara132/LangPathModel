@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer
 
 class PathDataset(Dataset):
-""" loads paths and captions from .pt file"""
+    """ loads paths and captions from .pt file"""
     def __init__(self, file_path):
         # Load the data from the .pt file
         self.data = torch.load(file_path)
@@ -29,7 +29,7 @@ from torch.nn.utils.rnn import pad_sequence
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
 def collate_fn(batch):
-""" extracts paths text and masks from batch """
+    """ extracts paths text and masks from batch """
     from torch.nn.utils.rnn import pad_sequence
     paths, texts = zip(*batch)
 
