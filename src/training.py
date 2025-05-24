@@ -1,7 +1,7 @@
 import argparse
 import torch
 from torch.utils.data import DataLoader
-from colab_src.nn import TrajectoryModel
+from src.nn import TrajectoryModel
 from data.data_utils import ShapPathDataset, collate_fn
 
 t

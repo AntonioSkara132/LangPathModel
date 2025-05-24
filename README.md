@@ -12,6 +12,7 @@ pip install -r requirements.txt
 
 ## Training
 
+Position yourself into the LangPathModel directory
 To train the LangPathModel, run the following command:
 
 ```bash
