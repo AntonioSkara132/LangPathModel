@@ -21,7 +21,7 @@ def train(
         weight_decay: float = 0.0,
         checkpoint: str | None = None,
         ckpt_every: int = 10,
-        ckpt_dir: str = None
+        ckpt_dir: str = "/checkpoints/"
 ):
     """Train `model` for `niter` epochs and time each epoch."""
 

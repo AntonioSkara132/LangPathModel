@@ -7,6 +7,12 @@ sys.path.append("/content/LangPathModel")
 from data.data_utils import PathDataset, collate_fn
 from train import train
 
+"""
+If you want to train your LangPath model you call this function.
+It has 12 arguments explained in code below
+Every 10 epochs it stores your model in LangPathModel/checkpoints folder
+"""
+
 
 def get_args():
     """Parse command‑line arguments."""
