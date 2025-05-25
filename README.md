@@ -53,6 +53,18 @@ Omit `--save` to display the animation interactively instead of saving it.
 
 ## Dataset Creation
 
+**NEW**
+	
+Because of increasing size of our data we decided to put comined data on hugging face.
+
+You can also generate dataset by shapes.py in data folder by modifying classes list:
+In classes add:
+```python
+dict(shape=wanted_shape(circle/square), params=dict(center=(x, y),  text= shape_caption, n=number_of_paths_to_be_generated)),
+```
+![Alt text](data/new_dataset.png)
+
+
 Generate synthetic datasets with simple geometric trajectories:
 
 ```bash
@@ -60,6 +72,8 @@ python data/squares.py --square_center 250 500 --text "left square" --filename "
 
 python data/circles.py --circle_center 250 500 --text "left circle" --filename "left_circle.pt" --num_origins 5000
 ```
+
+
 These scripts create `.pt` files containing training data of paths shaped as squares or circles, labeled with the given text prompts.
 
 ## Contributing
