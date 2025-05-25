@@ -34,7 +34,7 @@ python training	.py \
 Replace `/path/to/...` with the appropriate file paths on your system.
 
 ## Evaluation
-
+**Doesnt work**
 To generate and visualize a path from a text prompt using a trained model:
 
 ```bash
