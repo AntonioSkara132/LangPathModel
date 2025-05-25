@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     num_to_plot = 12
     rows, cols = 3, 4
-    fig, axes = plt.subplots(rows, cols, figsize=(14, 14))  # Square plots
+    fig, axes = plt.subplots(rows, cols, figsize=(16, 16))  # Square plots
 
     for i in range(num_to_plot):
         index = np.random.randint(0, len(dataset))
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
         ax.plot(x, y, linewidth=4, alpha=0.2, color='gray')
 
-        ax.set_title(f"Sample {i + 1}: \"{text}\"", fontsize=10)
+        ax.set_title(f"{text}", fontsize=10)
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.set_xlim(-0.1, 1.1)
@@ -49,6 +49,6 @@ if __name__ == "__main__":
         cbar.set_label("Time Progression")
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig("visualization.png")
 
 

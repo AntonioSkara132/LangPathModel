@@ -17,7 +17,7 @@ def get_args():
     parser.add_argument("--start_lr", type=float, default=1e-3, help="Initial learning rate")
     parser.add_argument("--weight_decay", type=float, default=1e-5, help="Weight decay (L2 regularisation)")
     parser.add_argument("--lr_step", type=int, default=15, help="Step size for LR scheduler (if any)")
-    parser.add_argument("--gamma", type=int, default=0.1, help="Scheduler factor")
+    parser.add_argument("--gamma", type=float, default=0.1, help="Scheduler factor")
 
 
     # Model architecture
