@@ -1,5 +1,5 @@
 import torch
-from data.data_utils import PathDataset
+from data_utils import PathDataset
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
