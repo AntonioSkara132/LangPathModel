@@ -54,7 +54,7 @@ class LangPathModel(nn.Module):
 
 		tgt_mask = torch.triu(torch.ones(tgt_len, tgt_len, device=tgt.device) * float('-inf'), diagonal=1).bool()
 
-		out = self.decoder(emb_tgt, memory=emb_text, tgt_mask=tgt_mask, tgt_key_padding_mask = path_mask[:-1])
+		out = self.decoder(emb_tgt, memory=emb_text, tgt_mask=tgt_mask, tgt_key_padding_mask = path_mask[:, :-1])
 		out = self.output_layer(out)
 		return out
 

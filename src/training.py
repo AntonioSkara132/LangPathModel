@@ -5,8 +5,9 @@ from nn import LangPathModel
 import sys
 sys.path.append("/content/LangPathModel")
 from data.data_utils import PathDataset, collate_fn
+from train import train
 
-t
+
 def get_args():
     """Parse command‑line arguments."""
     parser = argparse.ArgumentParser(description="Train TrajectoryModel with configurable hyper‑parameters")
