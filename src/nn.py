@@ -20,7 +20,7 @@ class LangPathModel(nn.Module):
 		 hidden_dim=512, 
 		 dropout = 0, 
 		 max_length=1000):
-		super(TrajectoryModel, self).__init__()
+		super(LangPathModel, self).__init__()
 
 		self.d_model = d_model
 		self.num_encoders = num_encoder_layers
@@ -43,7 +43,7 @@ class LangPathModel(nn.Module):
 		self.decoder = torch.nn.TransformerDecoder(decoder_layer=decoderLayer, num_layers=5)
 		self.output_layer = nn.Linear(d_model, d_traj)
 
-	def forward(self, path_mask, tgt, text_mask):
+	def forward(self, tgt, path_mask, text, text_mask):
 		batch_size, path_len = path.size(0), path.size(1)
 		tgt_len = tgt.size(1)
 
@@ -52,9 +52,9 @@ class LangPathModel(nn.Module):
 		emb_tgt = emb_tgt + self.positional_encoding[:tgt_len].permute(1, 0, 2)
 		emb_text = self.text_encoder(text, text_mask)      
 
-		tgt_mask = torch.triu(torch.ones(tgt_len, tgt_len, device=path.device) * float('-inf'), diagonal=1).bool()
+		tgt_mask = torch.triu(torch.ones(tgt_len, tgt_len, device=tgt.device) * float('-inf'), diagonal=1).bool()
 
-		out = self.decoder(emb_tgt, memory=emb_text, tgt_mask=tgt_mask)
+		out = self.decoder(emb_tgt, memory=emb_text, tgt_mask=tgt_mask, tgt_key_padding_mask = path_mask[:-1])
 		out = self.output_layer(out)
 		return out
 

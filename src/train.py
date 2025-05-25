@@ -16,6 +16,8 @@ def train(
         niter,
         device,
         start_lr: float = 1e-4,
+        step: int = 10,
+        gamma: float = 0.1,
         weight_decay: float = 0.0,
         checkpoint: str | None = None,
         ckpt_every: int = 10,
@@ -64,7 +66,8 @@ def train(
 
             preds = model(text=text_ids,
                           tgt=decoder_input,
-                          text_mask=text_mask)               # shape [B, T, …]
+                          path_mask = path_masks,
+                          text_mask=text_mask)  
 
             loss = criterion(preds, target_output, path_masks)
             loss.backward()

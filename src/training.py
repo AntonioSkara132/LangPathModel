@@ -2,7 +2,7 @@ import argparse
 import torch
 from torch.utils.data import DataLoader
 from src.nn import TrajectoryModel
-from data.data_utils import ShapPathDataset, collate_fn
+from data.data_utils import PathDataset, collate_fn
 
 t
 def get_args():
@@ -14,6 +14,8 @@ def get_args():
     parser.add_argument("--start_lr", type=float, default=1e-3, help="Initial learning rate")
     parser.add_argument("--weight_decay", type=float, default=1e-5, help="Weight decay (L2 regularisation)")
     parser.add_argument("--lr_step", type=int, default=15, help="Step size for LR scheduler (if any)")
+    parser.add_argument("--gamma", type=int, default=0.1, help="Scheduler factor")
+
 
     # Model architecture
     parser.add_argument("--d_model", type=int, default=128, help="Transformer hidden size (d_model)")
@@ -32,11 +34,11 @@ def get_args():
 def main():
     args = get_args()
     
-    dataset = ShapePathDataset(args.output_path)
+    dataset = PathDataset(args.dataset_path)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, collate_fn=collate_fn, shuffle=True)
 
     # Instantiate model with cmd‑line hyper‑parameters
-    model = TrajectoryModel(
+    model = LangPathModel(
         d_model=args.d_model,
         num_heads_decoder=args.num_heads,
         num_decoder_layers=args.num_decoder_layers,
@@ -57,6 +59,7 @@ def main():
         dataloader=dataloader,
         device=device,
         start_lr=args.start_lr,
+        gamma = args.gamma,
         weight_decay=args.weight_decay,
         step=args.lr_step,
     )
