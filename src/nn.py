@@ -44,7 +44,6 @@ class LangPathModel(nn.Module):
 		self.output_layer = nn.Linear(d_model, d_traj)
 
 	def forward(self, tgt, path_mask, text, text_mask):
-		batch_size, path_len = path.size(0), path.size(1)
 		tgt_len = tgt.size(1)
 
 		emb_tgt = self.input_embedding(tgt) 

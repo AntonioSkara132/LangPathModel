@@ -5,10 +5,11 @@ from torch.nn.utils.rnn import pad_sequence
 from src.textEncoders import TextEncoder
 
 """LangPathModel
-This file contains definition of LangPathModel with Mixed Density
-Network at the end, this model should be able to fit better on data
-with fewer text annotation and greater data variance in the same 
-annotation
+This file contains definition of LangPathModel with Classification
+head instead of regression one, classification approach has the
+potential to beat regression on generation task
+This function doesnt have loss because its supposed to use
+Cross Entropy loss
 """
 
 

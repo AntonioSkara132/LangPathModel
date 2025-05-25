@@ -69,7 +69,7 @@ def train(
                           path_mask = path_masks,
                           text_mask=text_mask)  
 
-            loss = criterion(preds, target_output, path_masks)
+            loss = criterion(preds, target_output, path_masks[:, 1:)
             loss.backward()
             optimizer.step()
 
