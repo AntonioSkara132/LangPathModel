@@ -1,7 +1,9 @@
 import argparse
 import torch
 from torch.utils.data import DataLoader
-from src.nn import TrajectoryModel
+from nn import LangPathModel
+import sys
+sys.path.append("/content/LangPathModel")
 from data.data_utils import PathDataset, collate_fn
 
 t

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from transformers import BertModel
 from torch.nn.utils.rnn import pad_sequence
-from src.textEncoders import TextEncoder
+from textEncoders import TextEncoder
 
 """LangPathModel
 This file contains definition of basic LangPathModel
