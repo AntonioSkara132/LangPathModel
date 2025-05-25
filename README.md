@@ -1,6 +1,7 @@
 # LangPath
 
 LangPathModel is a transformer-based model designed to generate 2D paths in an autoregressive manner, conditioned on natural language input.
+As a u tutorial please check our notebook.ipynb.
 
 ## Installation
 
@@ -16,25 +17,26 @@ Position yourself into the LangPathModel directory
 To train the LangPathModel, run the following command:
 
 ```bash
-python training	.py \
-  --niter 50 \
+python LangPathModel/src/training.py \
+  --niter 100 \
   --start_lr 0.001 \
-  --lr_step 15 \
-  --lr_gamma 0.1 \
+  --lr_step 10 \
   --weight_decay 1e-5 \
-  --d_model 128 \
+  --d_model 64 \
   --num_heads 8 \
-  --num_decoder_layers 5 \
+  --num_decoder_layers 2 \
   --dropout 0.2 \
+  --gamma 0.1 \
   --batch_size 500 \
-  --dataset_path /path/to/data/cats_and_dogs.pt \
-  --output_path /path/to/output_model.pth
+  --dataset_path /content/CaptyShapes/small_dataset.pt \
+  --output_path /new_model.pth
 ```
 
 Replace `/path/to/...` with the appropriate file paths on your system.
 
 ## Evaluation
 **Doesnt work**
+
 To generate and visualize a path from a text prompt using a trained model:
 
 ```bash
