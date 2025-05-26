@@ -80,10 +80,12 @@ def build_paths(
         shape_type: str,
         shape_params: Dict,
         text: str,
-        num_origins: int
+        num_origins: int,
+        density: float = 0.1  # Controls how dense the points are based on perimeter
 ) -> List[Dict]:
     """
     Returns a list[dict] each with keys {'path': Tensor, 'text': str}
+    Automatically adjusts number of points based on shape size.
     """
     out = []
     for _ in range(num_origins):
@@ -91,37 +93,41 @@ def build_paths(
 
         if shape_type == "circle":
             cx, cy, r = shape_params["center"][0], shape_params["center"][1], shape_params["radius"]
-            closest   = closest_on_circle(cx, cy, r, start_pt)
-            to_shape  = move_straight_line(start_pt, closest)
-            perimeter = gen_circle_trace(cx, cy, r, closest)
+            circumference = 2 * np.pi * r
+            n_points = max(5, int(circumference * density))  # ensure at least 10
+            closest = closest_on_circle(cx, cy, r, start_pt)
+            to_shape = move_straight_line(start_pt, closest)
+            perimeter = gen_circle_trace(cx, cy, r, closest, n=n_points)
+
         elif shape_type == "square":
             cx, cy, size = shape_params["center"][0], shape_params["center"][1], shape_params["size"]
-            outline  = square_outline(cx, cy, size)
-            closest  = closest_on_square(outline, start_pt)
+            perimeter_length = 4 * size
+            pts_per_side = max(2, int((perimeter_length * density) // 4))  # ensure at least 5/side
+            outline = square_outline(cx, cy, size, pts_per_side=pts_per_side)
+            closest = closest_on_square(outline, start_pt)
             to_shape = move_straight_line(start_pt, closest)
             perimeter = roll_to_start(outline, closest)
+
         else:
             raise ValueError(f"Unknown shape_type '{shape_type}'")
 
-        # build path list
         path_lst = []
-        # ----- straight move
         for x, y in to_shape:
-            path_lst.append([x, y, 0, 0])        # move
-        # ----- perimeter draw
+            path_lst.append([x, y, 0, 0])  # move
         for i in range(len(perimeter) - 1):
             x1, y1 = perimeter[i]
             x2, y2 = perimeter[i + 1]
-            path_lst.append([x1, y1, 1, 0])      # draw
+            path_lst.append([x1, y1, 1, 0])  # draw
             path_lst.append([x2, y2, 1, 0])
 
-        path_lst[-1][-1] = 1                     # stop flag
+        path_lst[-1][-1] = 1  # stop flag
 
         path_tensor = torch.tensor(path_lst, dtype=torch.float32).clone().detach()
         path_tensor[:, :2] = torch.tensor(add_noise(path_tensor[:, :2]), dtype=torch.float32).clone().detach()
 
         out.append({"path": path_tensor, "text": text})
     return out
+
 
 # ------------------------------------------------------------
 # ----------  Incremental saver
@@ -152,12 +158,17 @@ def main():
     parser = argparse.ArgumentParser("Generate mixed shape path dataset")
     parser.add_argument("--out_file", default="mixed_paths.pt")
     parser.add_argument("--plot", action="store_true", help="Show a sample plot")
+    parser.add_argument("--density", type=float, default=0.1, help = "How dense will path be")
+    parser.add_argument("--n", type=int, default = 100, help="How many paths per annotation to generate")
     args = parser.parse_args()
+    n = args.n
+    density = args.density    
 
     # ---------------------------------------------------------------------
     # Describe each class you want to generate
     # ---------------------------------------------------------------------
-    n = 10
+
+    
     classes = [
     # ----------------- CIRCLES -----------------
     dict(shape="circle", params=dict(center=(500, 500), radius=50 ),  text="small circle in the middle",         n=n),
@@ -179,7 +190,7 @@ def main():
     dict(shape="circle", params=dict(center=(500, 800), radius=50 ),  text="small circle on the top side",       n=n),
     dict(shape="circle", params=dict(center=(500, 800), radius=100),  text="medium circle on the top side",      n=n),
     dict(shape="circle", params=dict(center=(500, 800), radius=150),  text="big circle on the top side",         n=n),
-
+    
     dict(shape="circle", params=dict(center=(800, 800), radius=50 ),  text="small circle in the top right corner",  n=n),
     dict(shape="circle", params=dict(center=(800, 800), radius=100),  text="medium circle in the top right corner", n=n),
     dict(shape="circle", params=dict(center=(800, 800), radius=150),  text="big circle in the top right corner",    n=n),
@@ -232,7 +243,8 @@ def main():
     dict(shape="square", params=dict(center=(800, 200), size=100 ),  text="small square in the bottom right corner",  n=n),
     dict(shape="square", params=dict(center=(800, 200), size=200 ),  text="medium square in the bottom right corner", n=n),
     dict(shape="square", params=dict(center=(800, 200), size=300 ),  text="big square in the bottom right corner",    n=n),
-]
+    
+    ]
 
     print(f"Generating dataset → {args.out_file}")
     i = 0
@@ -240,7 +252,7 @@ def main():
         i += 1
         print(f"• {cls['text']}  ({cls['shape']} × {cls['n']})")
         print(f"• Written {i}/{len(classes)}")
-        chunk = build_paths(cls["shape"], cls["params"], cls["text"], cls["n"])
+        chunk = build_paths(cls["shape"], cls["params"], cls["text"], cls["n"], density)
         append_to_pt(chunk, args.out_file)
 
     if args.plot:

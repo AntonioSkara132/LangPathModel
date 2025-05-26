@@ -36,6 +36,7 @@ def get_args():
     parser.add_argument("--dataset_path", type=str, default="cats_and_dogs.pth", help="Where is data")
     parser.add_argument("--batch_size", type=int, default=500, help="Mini‑batch size")
     parser.add_argument("--output_path", type=str, default="cats_and_dogs.pth", help="Where to save the trained model")
+    parser.add_argument("--ckpt_path", type=str, default="cats_and_dogs.pth", help="Where to store checkpoints")
 
     return parser.parse_args()
 
@@ -71,6 +72,7 @@ def main():
         gamma = args.gamma,
         weight_decay=args.weight_decay,
         step=args.lr_step,
+        ckpt_dir = args.ckpt_path
     )
 
     #Save the model
