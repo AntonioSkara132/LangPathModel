@@ -76,7 +76,7 @@ def autoregressive_generate(model, txt, txt_mask,
 	actions   : ndarray [N]   (0/1 after binning on threshold 0.5)
 	"""
 	# masks / tensors
-	path_mask = torch.tensor([[1.0]], device=device)  # [1, 1]
+	path_mask = torch.Tensor([[1, 1]]).to(device)
 	start = torch.tensor([[[*start_xy, 0.0, 0.0]]], device=device)  # [1, 1, 4]
 	tgt   = start.clone()
 
@@ -86,9 +86,10 @@ def autoregressive_generate(model, txt, txt_mask,
 	for _ in range(max_steps):
 		with torch.no_grad():
 			pred = model(text=txt,
-                 	tgt=tgt,
-         		text_mask=txt_mask,
-                 	path_mask=path_mask)        # [1, T, 4]
+		         	tgt=tgt,
+		 		text_mask=txt_mask,
+		         	path_mask=path_mask
+		         	)        # [1, T, 4]
 
 		next_pt = pred[:, -1, :]                       # [1, 4]
 		positions.append(next_pt[0, :2].cpu().numpy())
@@ -96,8 +97,7 @@ def autoregressive_generate(model, txt, txt_mask,
 
 		# cat for next step
 		tgt       = torch.cat([tgt, next_pt.unsqueeze(1)], dim=1)
-		path_mask = torch.cat([path_mask,
-				       torch.ones((1, 1), device=device)], dim=1)
+		path_mask = torch.cat([path_mask, torch.ones((1, 1), device=device)], dim=1)
 
 		# stop flag
 		if next_pt[0, 3] > 0.5:
