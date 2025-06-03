@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from transformers import BertModel
 from torch.nn.utils.rnn import pad_sequence
+sys.path.append('/content/LangPathModel/src/')
 from textEncoders import TextEncoder
 
 """LangPathModel
