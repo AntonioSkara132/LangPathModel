@@ -47,9 +47,7 @@ def train(
         running_loss = 0.0
 
         for batch_paths, batch_texts, batch_path_masks in dataloader:
-            # --------------------------
-            # move tensors to device
-            # --------------------------
+
             batch_paths      = batch_paths.to(device).float()
             path_masks       = batch_path_masks.to(device).float()
 
@@ -85,9 +83,7 @@ def train(
               f"Loss: {avg_loss:8.4f} | "
               f"Time: {epoch_time:6.2f}s")
 
-        # ----------------------------------------------------
-        # 5. checkpointing
-        # ----------------------------------------------------
+        # checkpointing
         if epoch % ckpt_every == 0 or epoch == niter:
             ckpt_path = f"{ckpt_dir}/model_state_epoch_{epoch:03d}.pth"
             torch.save(model.state_dict(), ckpt_path)

@@ -1,7 +1,7 @@
 # LangPath
 
 LangPathModel is a transformer-based model designed to generate 2D paths in an autoregressive manner, conditioned on natural language input.
-As a u tutorial please check our notebook.ipynb.
+As a tutorial please check our tutorial.ipynb.
 
 ## Installation
 
@@ -26,8 +26,8 @@ python LangPathModel/src/training.py \
   --num_heads 8 \
   --num_decoder_layers 2 \
   --dropout 0.2 \
-  --gamma 0.1 \
-  --batch_size 500 \
+  --gamma 0.1 \ 
+  --batch_size 512 \
   --dataset_path /content/CaptyShapes/small_dataset.pt \
   --output_path /new_model.pth
 ```
@@ -66,6 +66,7 @@ dict(shape=wanted_shape(circle/square), params=dict(center=(x, y),  text= shape_
 ```
 ![Alt text](data/new_dataset.png)
 
+**OLD**
 
 Generate synthetic datasets with simple geometric trajectories:
 
