@@ -64,7 +64,7 @@ Because of increasing size of our data we decided to put comined data on hugging
 
 Link to hugging face is [here](https://huggingface.co/datasets/Tonio123/CaptyShapes)
 
-You can also generate dataset by shapes.py in data folder by modifying classes list:
+You can also generate dataset by shapes.py in data directoy by modifying classes list:
 In classes add:
 ```python
 dict(shape=wanted_shape(circle/square), params=dict(center=(x, y),  text= shape_caption, n=number_of_paths_to_be_generated)),
