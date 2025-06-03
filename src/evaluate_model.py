@@ -9,18 +9,40 @@ and plot the (x, y) path with binned actions (0 = blue, 1 = red).
 """
 
 
-# ---------------------------------------------------------------------
-# helper: load / build your model
-# ---------------------------------------------------------------------
+
+# helper: load / build your model from config
 def load_model(model_path: str, device: torch.device):
     """
-    Replace this stub with your actual model-loading code.
-    It must return a model with a signature:
-        model(text, tgt, text_mask, path_mask) -> [B, T, 4]
+    Load a trained model. Supports:
+    - PyTorch checkpoint with config dict (`torch.save({'model_state_dict': ..., 'config': ...})`)
+    Returns a model moved to the target device.
     """
-    # EXAMPLE – adjust to your project
-    from LangPathModel.colab_src.nn import TrajectoryModel
-    model = TrajectoryModel.load_from_checkpoint(model_path, map_location=device)
+    
+    import os
+    import torch
+    from LangPathModel.nn import LangPathModel  # update path if needed
+
+    if model_path.endswith(".ckpt"):
+        # If using PyTorch Lightning format
+        from LangPathModel.colab_src.nn import TrajectoryModel
+        model = TrajectoryModel.load_from_checkpoint(model_path, map_location=device)
+    else:
+        # Standard torch.save(dict) format
+        checkpoint = torch.load(model_path, map_location=device)
+        config = checkpoint.get("config", {
+            "d_model": 128,
+            "num_heads": 8,
+            "num_decoder_layers": 5,
+            "dropout": 0.2
+        })
+        model = LangPathModel(
+            d_model=config["d_model"],
+            num_heads_decoder=config["num_heads"],
+            num_decoder_layers=config["num_decoder_layers"],
+            dropout=config["dropout"]
+        )
+        model.load_state_dict(checkpoint["model_state_dict"])
+
     model.eval()
     return model.to(device)
 
