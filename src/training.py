@@ -56,7 +56,7 @@ def main():
 	)
 
 	#  Move model to device
-	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+	device = torch.device("cpu")
 	model.to(device)
 
 	for name, param in model.named_parameters():
