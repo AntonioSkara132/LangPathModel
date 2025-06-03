@@ -31,7 +31,7 @@ python LangPathModel/src/training.py \
   --dataset_path /path/to/your_dataset.pt \
   --output_path /path/to/new_model.pth
 ```
-gamma and start_lr are torch.optim.lr_scheduler.StepLR parameters https://docs.pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html.
+gamma and start_lr are torch.optim.lr_scheduler.StepLR parameters.
 Replace `/path/to/...` with the appropriate file paths on your system.
 
 ## Evaluation
@@ -58,7 +58,7 @@ Omit `--save` to display the animation interactively instead of saving it.
 **NEW**
 	
 Because of increasing size of our data we decided to put comined data on hugging face.
-Link to hugging face is: 
+Link to hugging face is [here](https://huggingface.co/datasets/Tonio123/CaptyShapes)
 
 You can also generate dataset by shapes.py in data folder by modifying classes list:
 In classes add:
