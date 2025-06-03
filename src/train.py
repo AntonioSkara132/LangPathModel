@@ -3,12 +3,7 @@ from datetime import datetime
 import torch
 from torch.optim.lr_scheduler import StepLR
 
-# ------------------------------------------------------------
-# assumes you have already done:
-#   from LangPathModel.colab_src.nn          import TrajectoryModel
-#   from LangPathModel.colab_src.textEncoders import TextEncoder
-#   (plus dataloader creation etc.)
-# ------------------------------------------------------------
+""" train of LangPathModel """
 
 def train(
         model,
