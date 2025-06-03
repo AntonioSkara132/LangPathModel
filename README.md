@@ -59,6 +59,7 @@ Omit `--save` to display the animation interactively instead of saving it.
 ## Dataset Creation
 
 **NEW**
+![alt text](https://github.com/AntonioSkara132/LangPathModel/blob/main/data/visualization.png)
 	
 Because of increasing size of our data we decided to put comined data on hugging face.
 
