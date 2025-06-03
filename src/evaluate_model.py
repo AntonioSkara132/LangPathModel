@@ -142,7 +142,7 @@ def main():
     ap.add_argument("--model_path", required=True, help="Path to model checkpoint (.pth)")
     ap.add_argument("--prompt",     required=True, help="Text prompt, e.g. 'draw circle in the middle'")
     ap.add_argument("--max_steps",  type=int, default=200, help="Maximum autoregressive steps")
-    ap.add_argument("--device",     default="cuda" if torch.cuda.is_available() else "cpu")
+    ap.add_argument("--device",     default="cpu")
     args = ap.parse_args()
 
     device = torch.device(args.device)
