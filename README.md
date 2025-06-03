@@ -61,6 +61,7 @@ Omit `--save` to display the animation interactively instead of saving it.
 **NEW**
 	
 Because of increasing size of our data we decided to put comined data on hugging face.
+
 Link to hugging face is [here](https://huggingface.co/datasets/Tonio123/CaptyShapes)
 
 You can also generate dataset by shapes.py in data folder by modifying classes list:
