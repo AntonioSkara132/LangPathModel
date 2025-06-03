@@ -28,10 +28,10 @@ python LangPathModel/src/training.py \
   --dropout 0.2 \
   --gamma 0.1 \ 
   --batch_size 512 \
-  --dataset_path /content/CaptyShapes/small_dataset.pt \
-  --output_path /new_model.pth
+  --dataset_path /path/to/your_dataset.pt \
+  --output_path /path/to/new_model.pth
 ```
-
+lr_step and start_lr are torch.optim.lr_scheduler.StepLR parameters.
 Replace `/path/to/...` with the appropriate file paths on your system.
 
 ## Evaluation
