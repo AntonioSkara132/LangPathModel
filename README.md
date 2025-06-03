@@ -1,6 +1,7 @@
 # LangPath
 
 LangPathModel is a transformer-based model designed to generate 2D paths in an autoregressive manner, conditioned on natural language input.
+
 As a tutorial please check our tutorial.ipynb.
 
 ## Installation
@@ -13,7 +14,8 @@ pip install -r requirements.txt
 
 ## Training
 
-Position yourself into the LangPathModel directory
+Position yourself into the LangPathModel directory.
+
 To train the LangPathModel, run the following command:
 
 ```bash
@@ -32,6 +34,7 @@ python LangPathModel/src/training.py \
   --output_path /path/to/new_model.pth
 ```
 gamma and start_lr are torch.optim.lr_scheduler.StepLR parameters.
+
 Replace `/path/to/...` with the appropriate file paths on your system.
 
 ## Evaluation
