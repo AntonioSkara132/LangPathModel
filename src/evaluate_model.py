@@ -78,6 +78,7 @@ def autoregressive_generate(model, txt, txt_mask,
 
 	positions = [start_xy]
 	actions = [start[0, 0, 2].item()]  # initial action (0)
+	print(txt)
 
 	for _ in range(max_steps):
 		with torch.no_grad():
