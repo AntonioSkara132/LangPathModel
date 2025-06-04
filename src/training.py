@@ -59,10 +59,6 @@ def main():
 	device = torch.device("cpu")
 	model.to(device)
 
-	for name, param in model.named_parameters():
-        	print(f"{name}: {param.device}")
-        
-
 	train(
 		model=model,
 		niter=args.niter,
