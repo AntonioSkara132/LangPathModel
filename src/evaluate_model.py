@@ -72,7 +72,7 @@ def autoregressive_generate(model, txt, txt_mask,
 	actions   : ndarray [N]   (0/1 after binning on threshold 0.5)
 	"""
 	# masks / tensors
-	path_mask = torch.Tensor([[1, 1]]).to(device)
+	path_mask = torch.Tensor([[0, 0]]).to(device)
 	start = torch.tensor([[[*start_xy, 0.0, 0.0]]], device=device)  # [1, 1, 4]
 	tgt = start.clone()
 
@@ -94,7 +94,7 @@ def autoregressive_generate(model, txt, txt_mask,
 
 		# cat for next step
 		tgt = torch.cat([tgt, next_pt.unsqueeze(1)], dim=1)
-		path_mask = torch.cat([path_mask, torch.ones((1, 1), device=device)], dim=1)
+		path_mask = torch.cat([path_mask, torch.zeros((1, 1), device=device)], dim=1)
 
 		# stop flag
 		if next_pt[0, 3] > 0.5:
@@ -124,7 +124,7 @@ def plot_path(positions, actions, title="Generated Path"):
 	plt.gca().set_aspect('equal')
 	plt.grid(True)
 	plt.legend()
-	plt.show()
+	plt.savefig('fig.png')
 
 # ---------------------------------------------------------------------
 # main

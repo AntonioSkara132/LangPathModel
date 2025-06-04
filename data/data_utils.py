@@ -58,7 +58,7 @@ def collate_fn(batch):
     padded_paths = pad_sequence(paths, batch_first=True, padding_value=0)
 
     max_len = padded_paths.size(1)
-    path_masks = torch.arange(max_len)[None, :].to(path_lengths.device) < path_lengths[:, None]  # shape: [B, T]
+    path_masks = ~torch.arange(max_len)[None, :].to(path_lengths.device) < path_lengths[:, None]  # shape: [B, T]
 
     encoded = tokenizer(
         list(texts),
