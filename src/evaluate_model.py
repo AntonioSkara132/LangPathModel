@@ -142,7 +142,7 @@ def main():
 
 	model = load_model(args.model_path, device)
 	txt, txt_mask = encode_text(args.prompt, device)
-
+	print(txt)
 	positions, actions = autoregressive_generate(
 		model, txt, txt_mask,
 		max_steps=args.max_steps,
