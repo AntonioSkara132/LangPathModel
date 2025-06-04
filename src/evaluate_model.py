@@ -15,9 +15,8 @@ def load_model(model_path: str, device: torch.device):
 	- PyTorch checkpoint with config dict (`torch.save({'model_state_dict': ..., 'config': ...})`)
 	Returns a model moved to the target device.
 	"""
-	import os
-	import torch
-	from LangPathModel.nn import LangPathModel  # update path if needed
+	
+	from nn import LangPathModel  # update path if needed
 
 	# Standard torch.save(dict) format
 	checkpoint = torch.load(model_path, map_location=device)
