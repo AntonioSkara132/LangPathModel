@@ -56,7 +56,7 @@ def main():
 	)
 
 	#  Move model to device
-	device = torch.device("cpu")
+	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	model.to(device)
 
 	train(
