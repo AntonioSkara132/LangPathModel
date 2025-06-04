@@ -8,8 +8,6 @@ Generate a robotic drawing trajectory from a trained model
 and plot the (x, y) path with binned actions (0 = blue, 1 = red).
 """
 
-
-
 # helper: load / build your model from config
 def load_model(model_path: str, device: torch.device):
 	"""
@@ -17,24 +15,23 @@ def load_model(model_path: str, device: torch.device):
 	- PyTorch checkpoint with config dict (`torch.save({'model_state_dict': ..., 'config': ...})`)
 	Returns a model moved to the target device.
 	"""
-
 	import os
 	import torch
 	from LangPathModel.nn import LangPathModel  # update path if needed
-  
+
 	# Standard torch.save(dict) format
 	checkpoint = torch.load(model_path, map_location=device)
 	config = checkpoint.get("config", {
-	    "d_model": 128,
-	    "num_heads": 8,
-	    "num_decoder_layers": 5,
-	    "dropout": 0.2
+		"d_model": 128,
+		"num_heads": 8,
+		"num_decoder_layers": 5,
+		"dropout": 0.2
 	})
 	model = LangPathModel(
-	    d_model=config["d_model"],
-	    num_heads_decoder=config["num_heads"],
-	    num_decoder_layers=config["num_decoder_layers"],
-	    dropout=config["dropout"]
+		d_model=config["d_model"],
+		num_heads_decoder=config["num_heads"],
+		num_decoder_layers=config["num_decoder_layers"],
+		dropout=config["dropout"]
 	)
 	model.load_state_dict(checkpoint["model_state_dict"])
 
@@ -52,12 +49,12 @@ def encode_text(prompt: str, device: torch.device):
 	from transformers import AutoTokenizer
 	tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 	enc = tokenizer(
-	prompt,
-	return_tensors="pt",
-	padding=True,
-	truncation=True
+		prompt,
+		return_tensors="pt",
+		padding=True,
+		truncation=True
 	)
-	txt_ids  = enc["input_ids"].to(device)
+	txt_ids = enc["input_ids"].to(device)
 	txt_mask = (enc["attention_mask"] == 0).to(device)  # True = pad
 	return txt_ids, txt_mask
 
@@ -65,9 +62,9 @@ def encode_text(prompt: str, device: torch.device):
 # generation loop
 # ---------------------------------------------------------------------
 def autoregressive_generate(model, txt, txt_mask,
-                            start_xy=(0.1, 0.9),
-                            max_steps=200,
-                            device=torch.device("cpu")):
+							start_xy=(0.1, 0.9),
+							max_steps=200,
+							device=torch.device("cpu")):
 	"""
 	Generates up to max_steps points or stops early
 	if the model sets stop_flag > 0.5.
@@ -78,34 +75,34 @@ def autoregressive_generate(model, txt, txt_mask,
 	# masks / tensors
 	path_mask = torch.Tensor([[1, 1]]).to(device)
 	start = torch.tensor([[[*start_xy, 0.0, 0.0]]], device=device)  # [1, 1, 4]
-	tgt   = start.clone()
+	tgt = start.clone()
 
 	positions = [start_xy]
-	actions   = [start[0, 0, 2].item()]  # initial action (0)
+	actions = [start[0, 0, 2].item()]  # initial action (0)
 
 	for _ in range(max_steps):
 		with torch.no_grad():
 			pred = model(text=txt,
-		         	tgt=tgt,
-		 		text_mask=txt_mask,
-		         	path_mask=path_mask
-		         	)        # [1, T, 4]
+						 tgt=tgt,
+						 text_mask=txt_mask,
+						 path_mask=path_mask
+						 )  # [1, T, 4]
 
-		next_pt = pred[:, -1, :]                       # [1, 4]
+		next_pt = pred[:, -1, :]  # [1, 4]
 		positions.append(next_pt[0, :2].cpu().numpy())
 		actions.append(next_pt[0, 2].item())
 
 		# cat for next step
-		tgt       = torch.cat([tgt, next_pt.unsqueeze(1)], dim=1)
+		tgt = torch.cat([tgt, next_pt.unsqueeze(1)], dim=1)
 		path_mask = torch.cat([path_mask, torch.ones((1, 1), device=device)], dim=1)
 
 		# stop flag
 		if next_pt[0, 3] > 0.5:
-	    		break
+			break
 
 	positions = np.array(positions)
-	actions   = np.array(actions)
-	binned    = (actions >= 0.5).astype(int)  # 0/1
+	actions = np.array(actions)
+	binned = (actions >= 0.5).astype(int)  # 0/1
 	return positions, binned
 
 # ---------------------------------------------------------------------
@@ -116,8 +113,8 @@ def plot_path(positions, actions, title="Generated Path"):
 	for (x, y), a in zip(positions, actions):
 		color = "red" if a == 1 else "blue"
 		label = "Action = 1" if (a == 1 and np.sum(actions == 1) == 1) else \
-                	"Action = 0" if (a == 0 and np.sum(actions == 0) == 1) else None
-        	plt.scatter(x, y, c=color, s=50, label=label)
+			"Action = 0" if (a == 0 and np.sum(actions == 0) == 1) else None
+		plt.scatter(x, y, c=color, s=50, label=label)
 
 	plt.title(title + "  (0=blue, 1=red)")
 	plt.xlabel("X")
@@ -135,9 +132,9 @@ def plot_path(positions, actions, title="Generated Path"):
 def main():
 	ap = argparse.ArgumentParser("Generate and plot a trajectory")
 	ap.add_argument("--model_path", required=True, help="Path to model checkpoint (.pth)")
-	ap.add_argument("--prompt",     required=True, help="Text prompt, e.g. 'draw circle in the middle'")
-	ap.add_argument("--max_steps",  type=int, default=200, help="Maximum autoregressive steps")
-	ap.add_argument("--device",     default="cpu")
+	ap.add_argument("--prompt", required=True, help="Text prompt, e.g. 'draw circle in the middle'")
+	ap.add_argument("--max_steps", type=int, default=200, help="Maximum autoregressive steps")
+	ap.add_argument("--device", default="cpu")
 	args = ap.parse_args()
 
 	device = torch.device(args.device)
@@ -150,11 +147,12 @@ def main():
 		model, txt, txt_mask,
 		max_steps=args.max_steps,
 		device=device
-    	)
+	)
 
 	plot_path(positions, actions, title=args.prompt)
 
 # ---------------------------------------------------------------------
 if __name__ == "__main__":
 	main()
+
 
