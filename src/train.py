@@ -33,7 +33,7 @@ def train(
     optimizer  = torch.optim.Adam(model.parameters(),
                                   lr=start_lr,
                                   weight_decay=weight_decay)
-    scheduler  = StepLR(optimizer, step_size=10, gamma=0.5)
+    scheduler  = StepLR(optimizer, step_size=step, gamma=gamma)
 
     num_batches = len(dataloader)
 
