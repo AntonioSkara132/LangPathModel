@@ -61,7 +61,6 @@ def encode_text(prompt: str, device: torch.device):
 # generation loop
 # ---------------------------------------------------------------------
 def autoregressive_generate(x0, y0, model, txt, txt_mask,
-							start_xy=(0.1, 0.9),
 							max_steps=200,
 							device=torch.device("cpu")):
 	"""
@@ -76,7 +75,7 @@ def autoregressive_generate(x0, y0, model, txt, txt_mask,
 	start = torch.tensor([[[x0, y0, 0.0, 0.0]]], device=device)  # [1, 1, 4]
 	tgt = start.clone()
 
-	positions = [start_xy]
+	positions = [[x0, y0]]
 	actions = [start[0, 0, 2].item()]  # initial action (0)
 	print(txt)
 
