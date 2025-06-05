@@ -3,7 +3,9 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import csv
-from nn import LangPathModel  
+from nn import LangPathModel 
+from evaluate_model import plot_path, encode_text, load_model, autoregressive_generate
+
 
 # --- Velocity Computation ---
 def calc_point_vels(path: np.ndarray, target_velocity=1.0, ramp_up_time=100.0, ramp_down_time=140.0):
@@ -35,11 +37,13 @@ def calc_point_vels(path: np.ndarray, target_velocity=1.0, ramp_up_time=100.0, r
 	vels = dirs * speeds[:, None]
 	return vels
 
+# --- Save CSV ---
 def export_to_csv(positions, velocities, actions, filename="trajectory.csv"):
 	data = np.hstack([positions, velocities, actions[:, None]])
 	header = ["x", "y", "vx", "vy", "action"]
 	np.savetxt(filename, data, delimiter=",", header=",".join(header), comments='')
 
+# --- Main ---
 def main():
 	ap = argparse.ArgumentParser("Generate and plot a trajectory")
 	ap.add_argument("--model_path", required=True, help="Path to model checkpoint (.pth)")
@@ -55,12 +59,12 @@ def main():
 	device = torch.device(args.device)
 	print(f"Using device → {device}")
 
-	model = load_model(args.x0, args.y0, args.model_path, device)
+	model = load_model(args.model_path, device)
 	txt, txt_mask = encode_text(args.prompt, device)
 
 	positions, actions = autoregressive_generate(
-		model, txt, txt_mask,
-		start_xy=(args.x0, args.y0),
+		model = model, txt = txt, txt_mask = txt_mask,
+		x0 = args.x0, y0 = args.y0,
 		max_steps=args.max_steps,
 		device=device
 	)

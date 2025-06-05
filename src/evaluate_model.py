@@ -9,7 +9,7 @@ and plot the (x, y) path with binned actions (0 = blue, 1 = red).
 """
 
 # helper: load / build your model from config
-def load_model(x0: int, y0: int, model_path: str, device: torch.device):
+def load_model(model_path: str, device: torch.device):
 	"""
 	Load a trained model. Supports:
 	- PyTorch checkpoint with config dict (`torch.save({'model_state_dict': ..., 'config': ...})`)
