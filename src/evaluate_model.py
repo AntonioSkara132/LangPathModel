@@ -154,6 +154,7 @@ def main():
 	)
 
 	plot_path(positions, actions, title=args.prompt)
+	print("Created fig.png file") 
 
 # ---------------------------------------------------------------------
 if __name__ == "__main__":
