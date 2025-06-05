@@ -9,7 +9,7 @@ and plot the (x, y) path with binned actions (0 = blue, 1 = red).
 """
 
 # helper: load / build your model from config
-def load_model(model_path: str, device: torch.device):
+def load_model(x0: int, y0: int, model_path: str, device: torch.device):
 	"""
 	Load a trained model. Supports:
 	- PyTorch checkpoint with config dict (`torch.save({'model_state_dict': ..., 'config': ...})`)
@@ -135,7 +135,11 @@ def main():
 	ap.add_argument("--prompt", required=True, help="Text prompt, e.g. 'draw circle in the middle'")
 	ap.add_argument("--max_steps", type=int, default=200, help="Maximum autoregressive steps")
 	ap.add_argument("--device", default="cpu")
+	ap.add_argument("--x0", type=int, default=0.5)
+	ap.add_argument("--y0", type=int, default=0.5)
 	args = ap.parse_args()
+	x0 = args.x0
+	y0 = args.y0
 
 	device = torch.device(args.device)
 	print(f"Using device → {device}")
@@ -144,6 +148,7 @@ def main():
 	txt, txt_mask = encode_text(args.prompt, device)
 	print(txt)
 	positions, actions = autoregressive_generate(
+		x0, y0,
 		model, txt, txt_mask,
 		max_steps=args.max_steps,
 		device=device
