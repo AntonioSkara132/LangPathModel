@@ -56,9 +56,10 @@ def collate_fn(batch):
     path_lengths = torch.tensor([p.size(0) for p in paths]) 
 
     padded_paths = pad_sequence(paths, batch_first=True, padding_value=0)
-
+    #print(path_lengths)
     max_len = padded_paths.size(1)
-    path_masks = ~torch.arange(max_len)[None, :].to(path_lengths.device) < path_lengths[:, None]  # shape: [B, T]
+    range_row = torch.arange(max_len, device=path_lengths.device)[None, :]  # shape (1, T)
+    path_masks = ~(range_row < path_lengths[:, None])  # shape (B, T), True where not padding
 
     encoded = tokenizer(
         list(texts),
@@ -68,3 +69,4 @@ def collate_fn(batch):
     )
 
     return padded_paths, encoded, path_masks
+
