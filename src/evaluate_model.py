@@ -134,8 +134,8 @@ def main():
 	ap.add_argument("--prompt", required=True, help="Text prompt, e.g. 'draw circle in the middle'")
 	ap.add_argument("--max_steps", type=int, default=200, help="Maximum autoregressive steps")
 	ap.add_argument("--device", default="cpu")
-	ap.add_argument("--x0", type=int, default=0.5)
-	ap.add_argument("--y0", type=int, default=0.5)
+	ap.add_argument("--x0", type=float, default=0.5)
+	ap.add_argument("--y0", type=float, default=0.5)
 	args = ap.parse_args()
 	x0 = args.x0
 	y0 = args.y0
