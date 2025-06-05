@@ -1,0 +1,6 @@
+dict(shape="circle", params=dict(center=(500, 500), radius=100), text="circle in the middle", n=n),
+dict(shape="circle", params=dict(center=(800, 500), radius=100), text="circle on the right side", n=n),
+dict(shape="circle", params=dict(center=(200, 500), radius=100), text="circle on the left side", n=n),
+dict(shape="circle", params=dict(center=(500, 200), radius=100), text="circle on the bottom side", n=n),
+dict(shape="circle", params=dict(center=(500, 800), radius=100), text="circle on the top side", n=n),
+
