@@ -38,20 +38,15 @@ gamma and start_lr are torch.optim.lr_scheduler.StepLR parameters.
 Replace `/path/to/...` with the appropriate file paths on your system.
 
 ## Evaluation
-**Doesnt work**
 
 To generate and visualize a path from a text prompt using a trained model:
 
 ```bash
 python evaluate_model.py \
   --model_path path/to/model.pth \
-  --text "bottom circle" \
-  --d_model 128 \
-  --num_heads 8 \
-  --num_decoder_layers 2 \
-  --frames 200 \
-  --interval 100 \
-  --save path/to/video.mp4
+  --text "circle at the top side" \
+  --x0 \ 				#start x position
+  --y0  				#start y position
 ```
 
 Omit `--save` to display the animation interactively instead of saving it.
@@ -62,7 +57,7 @@ Omit `--save` to display the animation interactively instead of saving it.
 
 **NEW**
 	
-Because of increasing size of our data we decided to put comined data on hugging face.
+Because of increasing size of our data we decided to put combined data on hugging face.
 
 Link to hugging face is [here](https://huggingface.co/datasets/Tonio123/CaptyShapes)
 
@@ -72,6 +67,15 @@ In classes add:
 ```python
 dict(shape=wanted_shape(circle/square), params=dict(center=(x, y),  text= shape_caption, n=number_of_paths_to_be_generated)),
 ```
+Then
+```bash
+python shapes.py \
+  --density 0.0025 \			#density of points in path
+  --n \				#numbeer of instances per label	
+  --out_file
+```
+
+You can also analyze and visualize your dataset with analyze_dataset.py and data_visualization.py both take dataset filename as argument.
 
 **OLD**
 
